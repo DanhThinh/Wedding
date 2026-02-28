@@ -8,17 +8,19 @@ import lgThumbnail from 'lightgallery/plugins/thumbnail';
 export default function AlbumSection() {
   const { data } = useWedding();
   const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.1 });
-  const lightGalleryRef = useRef<any>(null);
+  const lgRef = useRef<any>(null);
 
   return (
-    <section id="album" ref={ref} className="py-20 bg-white">
+    <section id="album" ref={ref} className="py-24 section-cream">
       <div className="container-custom">
-        <h2 className="section-title">Album Hình Cưới</h2>
+
+        <div className="text-center mb-12">
+          <span className="section-eyebrow">Our Memories</span>
+          <h2 className="section-title">Album Hình Cưới</h2>
+        </div>
 
         <LightGallery
-          onInit={(detail) => {
-            lightGalleryRef.current = detail.instance;
-          }}
+          onInit={d => { lgRef.current = d.instance; }}
           speed={500}
           plugins={[lgZoom, lgThumbnail]}
           elementClassNames="gallery-grid"
@@ -29,31 +31,26 @@ export default function AlbumSection() {
               key={index}
               href={image}
               data-src={image}
-              className={`gallery-item block animate-on-scroll ${isVisible ? 'visible' : ''}`}
-              style={{ transitionDelay: `${0.1 * (index % 4)}s` }}
+              className={`gallery-item animate-on-scroll ${isVisible ? 'visible' : ''}`}
+              style={{ transitionDelay: `${0.07 * (index % 4)}s` }}
+              aria-label={`Ảnh cưới ${index + 1}`}
             >
               <img
                 src={image}
                 alt={`Wedding photo ${index + 1}`}
                 loading="lazy"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = `https://via.placeholder.com/400x400?text=Photo+${index + 1}`;
+                decoding="async"
+                width={400}
+                height={400}
+                onError={e => {
+                  (e.target as HTMLImageElement).src = `https://placehold.co/400x400/F5EBE9/D4887A?text=Photo+${index + 1}`;
                 }}
               />
-              {/* Hover overlay with zoom icon */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity z-10">
-                <svg
-                  className="w-10 h-10 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                  />
+              {/* Zoom icon */}
+              <div className="gallery-zoom-icon" aria-hidden="true">
+                <svg width="36" height="36" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="7" strokeLinecap="round"/>
+                  <path d="M21 21l-4.35-4.35M11 8v6M8 11h6" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
             </a>

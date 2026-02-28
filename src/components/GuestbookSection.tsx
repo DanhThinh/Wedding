@@ -15,111 +15,116 @@ export default function GuestbookSection() {
       showToast('Vui lòng nhập đầy đủ thông tin!', 'error');
       return;
     }
-
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise(r => setTimeout(r, 500));
     addWish(name.trim(), message.trim());
-    setName('');
-    setMessage('');
+    setName(''); setMessage('');
     setIsSubmitting(false);
   };
 
-  const handleSuggestedWish = (wish: string) => {
-    setMessage(wish);
-  };
-
   return (
-    <section id="guestbook" ref={ref} className="py-20 bg-white">
+    <section id="guestbook" ref={ref} className="py-24 section-white">
       <div className="container-custom">
-        <h2 className="section-title">Sổ Lưu Bút</h2>
 
-        <div className="grid lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
+        <div className="text-center mb-12">
+          <span className="section-eyebrow">Leave a Message</span>
+          <h2 className="section-title">Sổ Lưu Bút</h2>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-10 max-w-5xl mx-auto">
+
           {/* Form */}
-          <div className={`animate-on-scroll animate-left ${isVisible ? 'visible' : ''}`}>
-            <form onSubmit={handleSubmit} className="bg-gray-50 rounded-2xl p-6">
-              <div className="form-group">
-                <label className="form-label">Tên của bạn *</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="form-input"
-                  placeholder="Nhập tên của bạn"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Lời chúc *</label>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="form-textarea"
-                  placeholder="Nhập lời chúc của bạn..."
-                  required
-                />
-              </div>
-
-              {/* Suggested Wishes */}
-              <div className="mb-4">
-                <p className="text-sm text-gray-500 mb-2">Gợi ý:</p>
-                <div className="flex flex-wrap">
-                  {data.suggestedWishes.slice(0, 4).map((wish, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => handleSuggestedWish(wish)}
-                      className="suggested-wish"
-                    >
-                      {wish}
-                    </button>
-                  ))}
+          <div className={`animate-on-scroll animate-left ${isVisible ? 'visible' : ''}`} style={{ transitionDelay: '0.1s' }}>
+            <div className="guestbook-form-wrap">
+              <p className="font-cormorant text-xl italic mb-6" style={{ color: 'var(--primary)' }}>
+                Gửi lời yêu thương đến cặp đôi ✦
+              </p>
+              <form onSubmit={handleSubmit} noValidate>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="gb-name">Tên của bạn *</label>
+                  <input
+                    id="gb-name"
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    className="form-input"
+                    placeholder="Nhập tên của bạn"
+                    required
+                    autoComplete="name"
+                  />
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Đang gửi...
-                  </span>
-                ) : (
-                  'Gửi lời chúc'
-                )}
-              </button>
-            </form>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="gb-msg">Lời chúc *</label>
+                  <textarea
+                    id="gb-msg"
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    className="form-textarea"
+                    placeholder="Nhập lời chúc của bạn..."
+                    required
+                  />
+                </div>
+
+                {/* Suggested wishes */}
+                <div className="mb-5">
+                  <p className="form-label mb-2">Gợi ý nhanh:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {data.suggestedWishes.slice(0, 4).map((w, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setMessage(w)}
+                        className="suggested-wish"
+                      >
+                        {w}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ width: '100%', display: 'flex' }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                      Đang gửi…
+                    </>
+                  ) : (
+                    <span>Gửi lời chúc ✦</span>
+                  )}
+                </button>
+              </form>
+            </div>
           </div>
 
-          {/* Wishes List */}
-          <div className={`animate-on-scroll animate-right ${isVisible ? 'visible' : ''}`}>
-            <div className="max-h-[500px] overflow-y-auto pr-2 space-y-4">
+          {/* Wishes list */}
+          <div className={`animate-on-scroll animate-right ${isVisible ? 'visible' : ''}`} style={{ transitionDelay: '0.2s' }}>
+            <div className="max-h-[520px] overflow-y-auto space-y-3 pr-1">
               {wishes.length === 0 ? (
-                <div className="text-center text-gray-400 py-12">
-                  <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                <div className="text-center py-16" style={{ color: 'var(--text-light)' }}>
+                  <svg className="w-14 h-14 mx-auto mb-4" fill="none" stroke="currentColor" strokeWidth={1} viewBox="0 0 24 24" style={{ color: 'var(--blush-mid)' }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                   </svg>
-                  <p>Chưa có lời chúc nào</p>
-                  <p className="text-sm">Hãy là người đầu tiên gửi lời chúc!</p>
+                  <p className="font-cormorant text-xl italic" style={{ color: 'var(--text-mid)' }}>Chưa có lời chúc nào</p>
+                  <p className="text-sm mt-1">Hãy là người đầu tiên!</p>
                 </div>
-              ) : (
-                wishes.map((wish, index) => (
-                  <div key={index} className="wish-item">
-                    <div className="wish-author">{wish.name}</div>
-                    <div className="wish-content">{wish.message}</div>
-                    <div className="text-xs text-gray-400 mt-2">
-                      {new Date(wish.date).toLocaleDateString('vi-VN')}
-                    </div>
+              ) : wishes.map((w, i) => (
+                <div key={i} className="wish-item">
+                  <div className="wish-author">{w.name}</div>
+                  <div className="wish-content">{w.message}</div>
+                  <div className="text-xs mt-2" style={{ color: 'var(--text-light)' }}>
+                    {new Date(w.date).toLocaleDateString('vi-VN')}
                   </div>
-                ))
-              )}
+                </div>
+              ))}
             </div>
           </div>
         </div>

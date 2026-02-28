@@ -55,10 +55,11 @@ export default function RSVPPage() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gray-100 flex flex-col">
+      <div className="min-h-screen bg-gray-50 flex flex-col">
         {/* Header */}
-        <div className="bg-gray-200 rounded-b-lg p-6 text-center">
-          <div className="w-32 h-32 mx-auto rounded-full border-4 border-primary overflow-hidden mb-4">
+        <div className="relative bg-gradient-to-b from-primary/20 to-primary/5 pb-8 pt-10 text-center overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+          <div className="w-36 h-36 mx-auto rounded-full border-4 border-primary overflow-hidden mb-4 shadow-lg">
             <img
               src={data.heroSlides[0]}
               alt="Wedding"
@@ -68,19 +69,12 @@ export default function RSVPPage() {
               }}
             />
           </div>
-          <h2 className="font-coiny text-2xl uppercase mb-2">Xác nhận tham dự</h2>
-          <p className="font-jura text-xl">Đám cưới của</p>
-          <div className="flex items-center justify-center gap-2 mt-2">
-            <span className="font-jura text-xl">{data.groom.shortName}</span>
-            <img
-              src="/images/heart.gif"
-              alt="heart"
-              className="w-12 h-12"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/50?text=❤️';
-              }}
-            />
-            <span className="font-jura text-xl">{data.bride.shortName}</span>
+          <h2 className="font-coiny text-2xl uppercase mb-1 text-gray-700 tracking-wider">Xác nhận tham dự</h2>
+          <p className="font-jura text-gray-500 mb-2">Đám cưới của</p>
+          <div className="flex items-center justify-center gap-3">
+            <span className="font-jura text-xl text-gray-700">{data.groom.shortName}</span>
+            <span className="heart-icon w-8 h-8"></span>
+            <span className="font-jura text-xl text-gray-700">{data.bride.shortName}</span>
           </div>
         </div>
 
@@ -95,10 +89,7 @@ export default function RSVPPage() {
             <p className="text-gray-600 mb-6">
               Cảm ơn bạn rất nhiều vì sự hiện diện cùng những lời chúc tốt đẹp!
             </p>
-            <a
-              href="/"
-              className="btn-primary inline-block"
-            >
+            <a href="/" className="btn-primary inline-block">
               ← Về website đám cưới
             </a>
           </div>
@@ -108,10 +99,12 @@ export default function RSVPPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-gray-200 rounded-b-lg p-6 text-center">
-        <div className="w-32 h-32 mx-auto rounded-full border-4 border-primary overflow-hidden mb-4">
+      <div className="relative bg-gradient-to-b from-primary/20 to-primary/5 pb-8 pt-10 text-center overflow-hidden">
+        {/* Decorative top border */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+        <div className="w-36 h-36 mx-auto rounded-full border-4 border-primary overflow-hidden mb-4 shadow-lg">
           <img
             src={data.heroSlides[0]}
             alt="Wedding"
@@ -121,17 +114,18 @@ export default function RSVPPage() {
             }}
           />
         </div>
-        <h2 className="font-coiny text-2xl uppercase mb-2">Xác nhận tham dự</h2>
-        <p className="font-jura text-xl">Đám cưới của</p>
-        <div className="flex items-center justify-center gap-2 mt-2">
-          <span className="font-jura text-xl">{data.groom.shortName}</span>
-          <span className="heart-icon"></span>
-          <span className="font-jura text-xl">{data.bride.shortName}</span>
+        <h2 className="font-coiny text-2xl uppercase mb-1 text-gray-700 tracking-wider">Xác nhận tham dự</h2>
+        <p className="font-jura text-gray-500 mb-2">Đám cưới của</p>
+        <div className="flex items-center justify-center gap-3">
+          <span className="font-jura text-xl text-gray-700">{data.groom.shortName}</span>
+          <span className="heart-icon w-8 h-8"></span>
+          <span className="font-jura text-xl text-gray-700">{data.bride.shortName}</span>
         </div>
+        <p className="mt-2 text-sm text-primary font-medium tracking-widest">{data.weddingDateDisplay}</p>
       </div>
 
       {/* Form */}
-      <main className="max-w-lg mx-auto p-6">
+      <main className="max-w-lg mx-auto p-6 flex-1 w-full">
         <form onSubmit={handleSubmit} noValidate>
           {/* Name */}
           <div className="form-group">
@@ -196,7 +190,7 @@ export default function RSVPPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-red-500 hover:bg-red-600 text-white font-jura text-lg py-4 rounded-lg transition-colors disabled:opacity-50"
+            className="w-full bg-primary hover:bg-primary-dark text-white font-jura text-lg py-4 rounded-full transition-colors disabled:opacity-50 shadow-md"
           >
             {isSubmitting ? 'Đang xử lý...' : 'Xác nhận'}
           </button>

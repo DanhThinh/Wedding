@@ -7,8 +7,7 @@ import AlbumSection from '../components/AlbumSection';
 import EventsSection from '../components/EventsSection';
 import GuestbookSection from '../components/GuestbookSection';
 import GiftBoxSection from '../components/GiftBoxSection';
-import QuickActions from '../components/QuickActions';
-import { GuestbookModal } from '../components/Modal';
+import Footer from '../components/Footer';
 
 export default function HomePage() {
   return (
@@ -24,8 +23,7 @@ export default function HomePage() {
         <GuestbookSection />
         <GiftBoxSection />
       </main>
-      <QuickActions />
-      <GuestbookModal />
+      <Footer />
     </>
   );
 }
