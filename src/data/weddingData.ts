@@ -1,4 +1,6 @@
 // Wedding Data - Easy to customize
+const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`;
+
 export const weddingData = {
   // Couple Information
   groom: {
@@ -6,7 +8,7 @@ export const weddingData = {
     shortName: 'Danh Thịnh',
     initial: 'T',
     description: 'Là một chàng trai ấm áp, luôn yêu thương và coi trọng gia đình. Với Thịnh, gia đình không chỉ là điểm tựa mà còn là nơi gửi gắm mọi tình cảm chân thành nhất. Người luôn mang lại cảm giác an toàn và ấm cúng cho những ai ở bên.',
-    image: '/images/couple/groom-portrait.webp',
+    image: publicAsset('/images/couple/groom-portrait.webp'),
     bank: {
       name: 'NGUYEN DANH THINH',
       number: '',
@@ -19,7 +21,7 @@ export const weddingData = {
     shortName: 'Thuý Hằng',
     initial: 'H',
     description: 'Là người thông minh, luôn vui vẻ và hay cười, mang đến không khí tươi sáng cho những người xung quanh. Cô ấy đôi khi tỏ ra bướng nhưng lại rất quan tâm và chăm sóc những người mình yêu thương, luôn biết cách thể hiện sự quan tâm một cách sâu sắc.',
-    image: '/images/couple/bride-portrait.webp',
+    image: publicAsset('/images/couple/bride-portrait.webp'),
     bank: {
       name: 'PHAM THI THUY HANG',
       number: '',
@@ -60,7 +62,7 @@ export const weddingData = {
       date: '24/04/2017',
       title: 'Câu chuyện từ nụ cười...',
       content: 'Chúng mình đã bắt đầu từ những nụ cười mà hai đứa dành cho nhau. Chỉ từ những cái để ý nho nhỏ dành cho nhau trên trường học và câu chuyện tiếp tục bắt đầu từ đó...',
-      image: '/images/story/moment-01.webp',
+      image: publicAsset('/images/story/moment-01.webp'),
       label: 'BẮT ĐẦU TỪ',
     },
     {
@@ -68,14 +70,14 @@ export const weddingData = {
       date: '15/06/2018',
       title: 'Hai đứa chính thức tìm hiểu nhau...',
       content: 'Lúc đó, mọi thứ thật sự rất nhẹ nhàng và trong sáng. Cả hai chỉ là những người bạn vô tình gặp gỡ, rồi dần dần có những cuộc trò chuyện kéo dài không dứt, những nụ cười cứ thế nở trên môi mỗi lần nhìn thấy nhau.',
-      image: '/images/story/moment-02.webp',
+      image: publicAsset('/images/story/moment-02.webp'),
     },
     {
       id: 3,
       date: '11/01/2025',
       title: 'Ngày chung đôi',
       content: 'Gần 8 năm bên nhau, chúng ta đã cùng nhau vượt qua bao thử thách, chia sẻ những niềm vui, nỗi buồn, và những khoảnh khắc không thể quên. Tình yêu của chúng ta đã trưởng thành, vững vàng như một cây cổ thụ, ngày càng mạnh mẽ và bền chặt hơn qua từng ngày.',
-      image: '/images/story/moment-03.webp',
+      image: publicAsset('/images/story/moment-03.webp'),
       label: 'và sau nữa',
     },
   ],
@@ -116,23 +118,23 @@ export const weddingData = {
 
   // Photo Album
   album: [
-    '/images/album/photo-01.webp',
-    '/images/album/photo-02.webp',
-    '/images/album/photo-03.webp',
-    '/images/album/photo-04.webp',
-    '/images/album/photo-05.webp',
-    '/images/album/photo-06.webp',
-    '/images/album/photo-07.webp',
-    '/images/album/photo-08.webp',
+    publicAsset('/images/album/photo-01.webp'),
+    publicAsset('/images/album/photo-02.webp'),
+    publicAsset('/images/album/photo-03.webp'),
+    publicAsset('/images/album/photo-04.webp'),
+    publicAsset('/images/album/photo-05.webp'),
+    publicAsset('/images/album/photo-06.webp'),
+    publicAsset('/images/album/photo-07.webp'),
+    publicAsset('/images/album/photo-08.webp'),
   ],
 
   // Hero Slideshow Images
   heroSlides: [
-    '/images/hero/slide-01.webp',
-    '/images/hero/slide-02.webp',
-    '/images/hero/slide-03.webp',
-    '/images/hero/slide-04.webp',
-    '/images/hero/slide-05.webp',
+    publicAsset('/images/hero/slide-01.webp'),
+    publicAsset('/images/hero/slide-02.webp'),
+    publicAsset('/images/hero/slide-03.webp'),
+    publicAsset('/images/hero/slide-04.webp'),
+    publicAsset('/images/hero/slide-05.webp'),
   ],
 
   // Suggested Wishes

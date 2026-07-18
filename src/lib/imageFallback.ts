@@ -1,4 +1,4 @@
-export const DEFAULT_IMAGE_FALLBACK = '/images/fallback/photo-fallback.webp';
+export const DEFAULT_IMAGE_FALLBACK = `${import.meta.env.BASE_URL}images/fallback/photo-fallback.webp`;
 
 export function setImageFallback(
   image: HTMLImageElement,

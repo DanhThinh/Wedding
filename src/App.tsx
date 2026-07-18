@@ -15,6 +15,8 @@ import './styles/main.scss';
 
 const RSVPPage = lazy(() => import('./pages/RSVPPage'));
 
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
+
 function getEnvelopeOpened() {
   try {
     return sessionStorage.getItem('envelope-opened') === 'true';
@@ -55,7 +57,7 @@ function AppContent() {
   }, [showPetals]);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={routerBasename}>
       <Preloader />
       {!envelopeOpened && <EnvelopeDialog onOpen={handleEnvelopeOpen} />}
 
