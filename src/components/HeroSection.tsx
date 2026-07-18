@@ -65,7 +65,7 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <section id="hero" className="hero-section" aria-label="Hero">
+    <section id="hero" className="hero-section" aria-label="Hero" tabIndex={-1}>
       {/* Slides */}
       {data.heroSlides.map((src, i) => (
         <img
