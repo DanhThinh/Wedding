@@ -273,7 +273,10 @@
   box-shadow: 0 8px 22px rgba(45, 36, 34, 0.2);
 }
 
-.envelope-shell { width: min(380px, 84vw); height: min(264px, 58vw); }
+.envelope-shell {
+  width: min(380px, calc(100dvw - 2.5rem));
+  height: min(264px, calc((100dvw - 2.5rem) * 0.69));
+}
 
 /* Keep the invitation fully inside the pocket until the flap has opened. */
 .envelope-back-panel,
@@ -355,7 +358,14 @@
 
   .envelope-copy { margin-bottom: 0.8rem; }
   .envelope-hint { margin-bottom: 1.2rem; }
-  .envelope-shell { width: min(330px, 82vw); height: min(230px, 57vw); }
+  .envelope-shell { width: min(300px, calc(100dvw - 2rem)); height: min(208px, calc((100dvw - 2rem) * 0.69)); }
+}
+
+@media (max-width: 600px) {
+  .envelope-shell {
+    width: min(280px, calc(100dvw - 2rem));
+    height: min(194px, calc((100dvw - 2rem) * 0.69));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

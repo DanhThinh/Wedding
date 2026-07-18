@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { weddingData } from '../data/weddingData';
-import type { Wish } from './useGuestbook';
+import type { GuestbookMode, GuestbookSaveMode, Wish } from './useGuestbook';
 
 export interface ToastState {
   show: boolean;
@@ -23,8 +23,9 @@ export interface WeddingContextType {
   openModal: (modal: keyof ModalState) => void;
   closeModal: (modal: keyof ModalState) => void;
   wishes: Wish[];
-  addWish: (name: string, message: string) => Promise<boolean>;
+  addWish: (name: string, message: string) => Promise<GuestbookSaveMode | false>;
   isRealtimeGuestbook: boolean;
+  guestbookMode: GuestbookMode;
   guestbookLoading: boolean;
   isMusicPlaying: boolean;
   hasBackgroundMusic: boolean;

@@ -33,6 +33,7 @@ export function WeddingProvider({ children }: { children: ReactNode }) {
     addWish: addWishToStore,
     isRealtime: isRealtimeGuestbook,
     loading: guestbookLoading,
+    mode: guestbookMode,
   } = useGuestbook();
 
   // ─── Background Music ────────────────────────────────────────
@@ -137,13 +138,15 @@ export function WeddingProvider({ children }: { children: ReactNode }) {
   };
 
   const addWish = async (name: string, message: string) => {
-    const ok = await addWishToStore(name, message);
-    if (ok) {
-      showToast('Gửi lời chúc thành công!', 'success');
+    const mode = await addWishToStore(name, message);
+    if (mode === 'firestore') {
+      showToast('Lời chúc đã được gửi realtime!', 'success');
+    } else if (mode === 'local') {
+      showToast('Đã lưu lời chúc trên thiết bị này.', 'info');
     } else {
       showToast('Gửi lời chúc thất bại, thử lại nhé!', 'error');
     }
-    return ok;
+    return mode;
   };
 
   return (
@@ -158,6 +161,7 @@ export function WeddingProvider({ children }: { children: ReactNode }) {
         wishes,
         addWish,
         isRealtimeGuestbook,
+        guestbookMode,
         guestbookLoading,
         isMusicPlaying,
         hasBackgroundMusic: Boolean(BACKGROUND_MUSIC_SRC),

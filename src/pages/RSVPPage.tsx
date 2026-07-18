@@ -4,6 +4,7 @@ import { useWedding } from '../hooks/weddingContext';
 import { setImageFallback } from '../lib/imageFallback';
 import { normalizePhone, saveRsvp, validateRsvp, type RsvpSaveMode } from '../lib/rsvp';
 import { getWeddingPhase } from '../lib/weddingState';
+import { trackEvent } from '../lib/analytics';
 
 export default function RSVPPage() {
   const { data, showToast } = useWedding();
@@ -41,16 +42,32 @@ export default function RSVPPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      void trackEvent('rsvp_validation_error', {
+        error_count: Object.keys(validateRsvp({
+          name: formData.name,
+          phone: normalizePhone(formData.phone),
+          eventIds: formData.eventIds,
+          plusOnes: Number(formData.plusOnes),
+        })).length,
+      });
+      return;
+    }
 
     setIsSubmitting(true);
 
     try {
+      const plusOnes = Number(formData.plusOnes);
       const mode = await saveRsvp({
         name: formData.name.trim(),
         phone: normalizePhone(formData.phone),
         eventIds: formData.eventIds,
-        plusOnes: Number(formData.plusOnes),
+        plusOnes,
+      });
+      void trackEvent('rsvp_submit', {
+        mode,
+        event_count: formData.eventIds.length,
+        plus_ones_count: plusOnes,
       });
       setSaveMode(mode);
       showToast(

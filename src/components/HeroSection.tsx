@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useWedding } from '../hooks/weddingContext';
 import { gsap } from 'gsap';
 import { getWeddingPhase } from '../lib/weddingState';
+import { trackEvent } from '../lib/analytics';
 
 export default function HeroSection() {
   const { data } = useWedding();
@@ -113,9 +114,31 @@ export default function HeroSection() {
 
         <div className="hero-cta hero-anim">
           {phase === 'after' ? (
-            <a href="#album" className="btn-light hero-cta-btn">Xem album kỷ niệm</a>
+            <a
+              href="#album"
+              className="btn-light hero-cta-btn"
+              onClick={() => {
+                void trackEvent('hero_cta_click', {
+                  target: 'album',
+                  phase,
+                });
+              }}
+            >
+              Xem album kỷ niệm
+            </a>
           ) : (
-            <Link to="/rsvp" className="btn-light hero-cta-btn">Xác nhận tham dự</Link>
+            <Link
+              to="/rsvp"
+              className="btn-light hero-cta-btn"
+              onClick={() => {
+                void trackEvent('hero_cta_click', {
+                  target: 'rsvp',
+                  phase,
+                });
+              }}
+            >
+              Xác nhận tham dự
+            </Link>
           )}
         </div>
 
@@ -128,7 +151,13 @@ export default function HeroSection() {
               aria-selected={i === current}
               aria-label={`Slide ${i + 1}`}
               className={`hero-dot ${i === current ? 'active' : ''}`}
-              onClick={() => selectSlide(i)}
+              onClick={() => {
+                void trackEvent('hero_slide_select', {
+                  slide_index: i + 1,
+                  slide_total: total,
+                });
+                selectSlide(i);
+              }}
             />
           ))}
         </div>

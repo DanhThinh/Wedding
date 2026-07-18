@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useWedding } from '../hooks/weddingContext';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { trackEvent } from '../lib/analytics';
 import gsap from 'gsap';
 
 export default function GuestbookSection() {
-  const { data, wishes, addWish, showToast, isRealtimeGuestbook } = useWedding();
+  const { data, wishes, addWish, showToast, guestbookMode } = useWedding();
   const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.1 });
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
@@ -30,11 +31,15 @@ export default function GuestbookSection() {
     }
     setIsSubmitting(true);
     
-    const ok = await addWish(name.trim(), message.trim());
-    if (!ok) {
+    const saveMode = await addWish(name.trim(), message.trim());
+    if (!saveMode) {
       setIsSubmitting(false);
       return;
     }
+    void trackEvent('wish_submit', {
+      mode: saveMode,
+      source: 'section',
+    });
     
     // Success animation
     if (formRef.current) {
@@ -77,12 +82,14 @@ export default function GuestbookSection() {
           <p className="section-subtitle">
             Gửi những lời chúc tốt đẹp đến chúng mình
           </p>
-          {isRealtimeGuestbook && (
-            <div className="guestbook-realtime-badge">
-              <span className="realtime-dot" />
-              Cập nhật trực tiếp · {wishes.length} lời chúc
-            </div>
-          )}
+          <div className="guestbook-realtime-badge">
+            <span className="realtime-dot" />
+            {guestbookMode === 'firestore'
+              ? `Cập nhật trực tiếp · ${wishes.length} lời chúc`
+              : guestbookMode === 'loading'
+                ? 'Đang kết nối Firebase'
+                : `Lưu trên thiết bị · ${wishes.length} lời chúc`}
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-10 max-w-5xl mx-auto">
@@ -199,7 +206,7 @@ export default function GuestbookSection() {
               ) : (
                 <div className="space-y-3">
                   {wishes.map((w, i) => (
-                    <div key={i} className="wish-item">
+                    <div key={w.id ?? `${w.date}-${i}`} className="wish-item">
                       <div className="wish-author">{w.name}</div>
                       <div className="wish-content">{w.message}</div>
                       <div className="wish-footer">

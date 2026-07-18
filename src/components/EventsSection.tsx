@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useWedding } from '../hooks/weddingContext';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { createGoogleCalendarUrl, downloadIcs } from '../lib/calendar';
+import { trackEvent } from '../lib/analytics';
 
 const CalendarIcons = {
   google: (
@@ -66,6 +67,35 @@ export default function EventsSection() {
     return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
   };
 
+  const handleMapToggle = (eventId: number) => {
+    const nextExpandedMap = expandedMap === eventId ? null : eventId;
+    setExpandedMap(nextExpandedMap);
+    void trackEvent('map_toggle', {
+      event_id: eventId,
+      expanded: nextExpandedMap === eventId,
+    });
+  };
+
+  const handleCalendarPopover = (eventId: number) => {
+    const nextActivePopover = activePopover === eventId ? null : eventId;
+    setActivePopover(nextActivePopover);
+    if (nextActivePopover === eventId) {
+      void trackEvent('calendar_menu_open', {
+        event_id: eventId,
+      });
+    }
+  };
+
+  const handleIcsDownload = (eventId: number, method: 'apple' | 'outlook') => {
+    const event = data.events.find(item => item.id === eventId);
+    if (!event) return;
+    void trackEvent('calendar_add', {
+      event_id: eventId,
+      method,
+    });
+    downloadIcs(event);
+  };
+
   return (
     <section id="events" ref={ref} className="py-24 section-white events-section">
       <div className="container-custom">
@@ -104,7 +134,7 @@ export default function EventsSection() {
                   <>
                     {/* Toggle map embed */}
                     <button
-                      onClick={() => setExpandedMap(expandedMap === event.id ? null : event.id)}
+                      onClick={() => handleMapToggle(event.id)}
                       className="event-map-btn"
                       aria-label={expandedMap === event.id ? 'Ẩn bản đồ' : 'Xem bản đồ'}
                     >
@@ -122,6 +152,11 @@ export default function EventsSection() {
                       rel="noopener noreferrer"
                       className="event-map-btn"
                       aria-label={`Chỉ đường đến ${event.name}`}
+                      onClick={() => {
+                        void trackEvent('map_directions_open', {
+                          event_id: event.id,
+                        });
+                      }}
                     >
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                         <path d="M9 11l3 3L22 4M3 20l3.09-6.18a3 3 0 012.71-1.82h0a3 3 0 012.71 1.82L15 20" strokeLinecap="round" strokeLinejoin="round"/>
@@ -143,7 +178,7 @@ export default function EventsSection() {
                 {/* Add to calendar */}
                 <div className="relative" ref={activePopover === event.id ? popoverRef : undefined}>
                   <button
-                    onClick={() => setActivePopover(activePopover === event.id ? null : event.id)}
+                    onClick={() => handleCalendarPopover(event.id)}
                     className="event-map-btn"
                     aria-expanded={activePopover === event.id}
                     aria-haspopup="true"
@@ -156,15 +191,26 @@ export default function EventsSection() {
 
                   {activePopover === event.id && (
                     <div className="calendar-popover">
-                      <a href={createGoogleCalendarUrl(event)} target="_blank" rel="noopener noreferrer" className="calendar-popover-item">
+                      <a
+                        href={createGoogleCalendarUrl(event)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="calendar-popover-item"
+                        onClick={() => {
+                          void trackEvent('calendar_add', {
+                            event_id: event.id,
+                            method: 'google',
+                          });
+                        }}
+                      >
                         {CalendarIcons.google}
                         <span>Google Calendar</span>
                       </a>
-                      <button onClick={() => downloadIcs(event)} className="calendar-popover-item w-full">
+                      <button onClick={() => handleIcsDownload(event.id, 'apple')} className="calendar-popover-item w-full">
                         {CalendarIcons.apple}
                         <span>Apple Calendar</span>
                       </button>
-                      <button onClick={() => downloadIcs(event)} className="calendar-popover-item w-full">
+                      <button onClick={() => handleIcsDownload(event.id, 'outlook')} className="calendar-popover-item w-full">
                         {CalendarIcons.outlook}
                         <span>Outlook / ICS</span>
                       </button>
@@ -192,6 +238,12 @@ export default function EventsSection() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="event-map-link"
+                      onClick={() => {
+                        void trackEvent('map_directions_open', {
+                          event_id: event.id,
+                          source: 'embed_footer',
+                        });
+                      }}
                     >
                       Mở trong Google Maps →
                     </a>

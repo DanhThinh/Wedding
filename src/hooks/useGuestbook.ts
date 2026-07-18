@@ -9,6 +9,9 @@ export interface Wish {
   date: string;
 }
 
+export type GuestbookMode = 'loading' | 'firestore' | 'local';
+export type GuestbookSaveMode = 'firestore' | 'local';
+
 const STORAGE_KEY = 'wedding-wishes';
 const COLLECTION_NAME = 'wishes';
 
@@ -47,7 +50,14 @@ export function useGuestbook() {
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [isRealtime, setIsRealtime] = useState(false);
   const [loading, setLoading] = useState(true);
-  const modeRef = useRef<'loading' | 'firestore' | 'local'>('loading');
+  const [mode, setMode] = useState<GuestbookMode>('loading');
+  const modeRef = useRef<GuestbookMode>('loading');
+
+  const setGuestbookMode = useCallback((nextMode: GuestbookMode) => {
+    modeRef.current = nextMode;
+    setMode(nextMode);
+    setIsRealtime(nextMode === 'firestore');
+  }, []);
 
   const loadFromLocalStorage = useCallback(() => {
     try {
@@ -83,11 +93,10 @@ export function useGuestbook() {
         const client = await getFirebaseClient();
         if (!active) return;
         if (client) {
-          const { collection, onSnapshot, orderBy, query } = await import('firebase/firestore');
+          const { collection, limit, onSnapshot, orderBy, query } = await import('firebase/firestore');
           if (!active) return;
-          const q = query(collection(client.db, COLLECTION_NAME), orderBy('createdAt', 'desc'));
-          modeRef.current = 'firestore';
-          setIsRealtime(true);
+          const q = query(collection(client.db, COLLECTION_NAME), orderBy('createdAt', 'desc'), limit(50));
+          setGuestbookMode('firestore');
           unsubscribe = onSnapshot(
             q,
             snapshot => {
@@ -106,8 +115,7 @@ export function useGuestbook() {
             },
             err => {
               console.error('[Guestbook] Lỗi realtime, fallback localStorage:', err);
-              modeRef.current = 'local';
-              setIsRealtime(false);
+              setGuestbookMode('local');
               loadFromLocalStorage();
             },
           );
@@ -115,8 +123,7 @@ export function useGuestbook() {
         }
       }
 
-      modeRef.current = 'local';
-      setIsRealtime(false);
+      setGuestbookMode('local');
       loadFromLocalStorage();
     };
 
@@ -125,7 +132,7 @@ export function useGuestbook() {
       active = false;
       unsubscribe?.();
     };
-  }, [loadFromLocalStorage]);
+  }, [loadFromLocalStorage, setGuestbookMode]);
 
   // Sync localStorage giữa các tab (chỉ khi không dùng realtime)
   useEffect(() => {
@@ -141,7 +148,7 @@ export function useGuestbook() {
 
   // ─── Thêm lời chúc ───
   const addWish = useCallback(
-    async (name: string, message: string): Promise<boolean> => {
+    async (name: string, message: string): Promise<GuestbookSaveMode | false> => {
       const trimmedName = name.trim();
       const trimmedMessage = message.trim();
       if (!trimmedName || !trimmedMessage) return false;
@@ -157,19 +164,18 @@ export function useGuestbook() {
             createdAt: serverTimestamp(),
           });
           // onSnapshot sẽ tự cập nhật danh sách
-          return true;
+          return 'firestore';
         } catch (err) {
           console.error('[Guestbook] Lỗi Firestore, chuyển sang lưu cục bộ:', err);
-          modeRef.current = 'local';
-          setIsRealtime(false);
-          return saveToLocalStorage(trimmedName, trimmedMessage);
+          setGuestbookMode('local');
+          return saveToLocalStorage(trimmedName, trimmedMessage) ? 'local' : false;
         }
       }
 
-      return saveToLocalStorage(trimmedName, trimmedMessage);
+      return saveToLocalStorage(trimmedName, trimmedMessage) ? 'local' : false;
     },
-    [saveToLocalStorage]
+    [saveToLocalStorage, setGuestbookMode]
   );
 
-  return { wishes, addWish, isRealtime, loading };
+  return { wishes, addWish, isRealtime, loading, mode };
 }

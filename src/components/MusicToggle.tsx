@@ -1,4 +1,5 @@
 import { useWedding } from '../hooks/weddingContext';
+import { trackEvent } from '../lib/analytics';
 
 /**
  * Nút nhạc nền nổi (fixed) ở góc phải trên cùng.
@@ -9,7 +10,12 @@ export default function MusicToggle() {
 
   return (
     <button
-      onClick={toggleMusic}
+      onClick={() => {
+        void trackEvent('music_toggle', {
+          target_state: isMusicPlaying ? 'off' : 'on',
+        });
+        toggleMusic();
+      }}
       className={`music-toggle ${isMusicPlaying ? 'playing' : ''}`}
       aria-label={isMusicPlaying ? 'Tắt nhạc nền' : 'Bật nhạc nền'}
       title={isMusicPlaying ? 'Tắt nhạc' : 'Bật nhạc'}

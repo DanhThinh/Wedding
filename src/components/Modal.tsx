@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useWedding } from '../hooks/weddingContext';
+import { trackEvent } from '../lib/analytics';
 
 interface ModalProps {
   isOpen: boolean;
@@ -74,8 +75,12 @@ export function GuestbookModal() {
     }
 
     setIsSubmitting(true);
-    const ok = await addWish(name.trim(), message.trim());
-    if (ok) {
+    const saveMode = await addWish(name.trim(), message.trim());
+    if (saveMode) {
+      void trackEvent('wish_submit', {
+        mode: saveMode,
+        source: 'modal',
+      });
       setName('');
       setMessage('');
       closeModal('guestbook');

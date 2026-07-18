@@ -48,18 +48,10 @@
    COUNTDOWN PARTICLES
    =================================================== */
 .countdown-particles {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
+  display: none;
 }
 .countdown-particle {
-  position: absolute;
-  width: 3px;
-  height: 3px;
-  background: rgba(212,136,122,0.4);
-  border-radius: 50%;
-  opacity: 0.3;
+  display: none;
 }
 
 /* ===================================================
@@ -81,8 +73,8 @@
   transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s;
 }
 .gallery-item:hover {
-  transform: scale(1.02) perspective(800px) rotateX(2deg) rotateY(-2deg);
-  box-shadow: 0 20px 40px rgba(45,36,34,0.15);
+  transform: scale(1.015);
+  box-shadow: 0 16px 34px rgba(45,36,34,0.12);
   z-index: 2;
 }
 
@@ -113,24 +105,10 @@
    COUPLE CARD SHIMMER ON HOVER
    =================================================== */
 .couple-card::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255,255,255,0.08) 50%,
-    transparent 70%
-  );
-  transform: rotate(45deg) translateY(100%);
-  transition: transform 0.8s ease;
-  pointer-events: none;
+  display: none;
 }
 .couple-card:hover::after {
-  transform: rotate(45deg) translateY(-100%);
+  display: none;
 }
 
 /* ===================================================
@@ -181,7 +159,7 @@
    MOBILE QUICK ACTIONS ENTRANCE
    =================================================== */
 .quick-actions {
-  animation: quickActionsSlideUp 0.5s ease-out 1s both;
+  animation: quickActionsSlideUp 0.42s ease-out 0.45s both;
 }
 @keyframes quickActionsSlideUp {
   from {
@@ -198,7 +176,7 @@
    SMOOTH SCROLL INDICATOR PULSE
    =================================================== */
 .hero-scroll-hint {
-  animation: fadeInUp 1s ease 2s both;
+  animation: fadeInUp 0.8s ease 1.2s both;
 }
 @keyframes fadeInUp {
   from {

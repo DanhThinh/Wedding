@@ -7,6 +7,7 @@ import 'lightgallery/css/lg-thumbnail.css';
 import { useWedding } from '../hooks/weddingContext';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { setImageFallback } from '../lib/imageFallback';
+import { trackEvent } from '../lib/analytics';
 
 export default function AlbumSection() {
   const { data } = useWedding();
@@ -34,6 +35,12 @@ export default function AlbumSection() {
               className={`album-editorial-item album-item-${index + 1} animate-on-scroll ${isVisible ? 'visible' : ''}`}
               style={{ transitionDelay: `${0.04 * index}s` }}
               aria-label={`Mở ảnh cưới ${index + 1}`}
+              onClick={() => {
+                void trackEvent('gallery_open', {
+                  image_index: index + 1,
+                  image_total: data.album.length,
+                });
+              }}
             >
               <img
                 src={src}

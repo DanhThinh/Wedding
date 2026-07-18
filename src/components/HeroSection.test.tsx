@@ -6,7 +6,7 @@ import HeroSection from './HeroSection';
 vi.mock('../hooks/weddingContext', () => ({
   useWedding: () => ({
     data: {
-      heroSlides: ['/images/hero-1.webp', '/images/hero-2.webp'],
+      heroSlides: ['/images/hero/slide-01.webp', '/images/hero/slide-02.webp'],
       groom: { shortName: 'Danh Thịnh' },
       bride: { shortName: 'Thuý Hằng' },
       weddingDate: '2099-01-11T18:00:00+07:00',

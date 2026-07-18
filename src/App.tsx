@@ -10,6 +10,7 @@ import Toast from './components/Toast';
 import DevQAPanel from './components/DevQAPanel';
 import { GuestbookModal } from './components/Modal';
 import HomePage from './pages/HomePage';
+import { trackEvent } from './lib/analytics';
 import './styles/main.scss';
 
 const RSVPPage = lazy(() => import('./pages/RSVPPage'));
@@ -40,6 +41,9 @@ function AppContent() {
     setEnvelopeOpenedFlag();
     setEnvelopeOpened(true);
     setShowPetals(true);
+    void trackEvent('envelope_open', {
+      has_music: hasBackgroundMusic,
+    });
     // Bật nhạc nền ngay khi mở thiệp (user gesture cho phép autoplay)
     startMusic();
   };
