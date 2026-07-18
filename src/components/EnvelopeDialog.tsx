@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useWedding } from '../hooks/useWedding';
+import { useWedding } from '../hooks/weddingContext';
 import gsap from 'gsap';
 
 interface EnvelopeDialogProps {
@@ -7,150 +7,186 @@ interface EnvelopeDialogProps {
 }
 
 export default function EnvelopeDialog({ onOpen }: EnvelopeDialogProps) {
-  const [isHidden, setIsHidden] = useState(false);
   const { data } = useWedding();
-  
-  // Refs for GSAP
+  const [isHidden, setIsHidden] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
+
   const overlayRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const envelopeRef = useRef<HTMLDivElement>(null);
-  const flapRef = useRef<HTMLDivElement>(null);
+  const copyRef = useRef<HTMLDivElement>(null);
+  const shellRef = useRef<HTMLButtonElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const flapRef = useRef<HTMLDivElement>(null);
   const sealRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
-  const hintRef = useRef<HTMLParagraphElement>(null);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
   const infoRef = useRef<HTMLDivElement>(null);
   const isAnimating = useRef(false);
 
-  // Entrance animation
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-      
-      // Initial states
-      gsap.set([subtitleRef.current, titleRef.current, hintRef.current], { 
-        opacity: 0, 
-        y: 30 
+      gsap.set(cardRef.current, {
+        xPercent: -50,
+        y: 14,
+        scale: 0.94,
+        opacity: 0,
+        visibility: 'hidden',
       });
-      gsap.set(envelopeRef.current, { 
-        opacity: 0, 
-        scale: 0.85, 
-        y: 40 
-      });
-      gsap.set(infoRef.current, { 
-        opacity: 0, 
-        y: 20 
-      });
-      
-      // Staggered text reveal
-      tl.to(subtitleRef.current, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.8 
-      })
-      .to(titleRef.current, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 1,
-        ease: 'power3.out'
-      }, '-=0.4')
-      .to(hintRef.current, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.6 
-      }, '-=0.5')
-      // Envelope entrance with dramatic scale
-      .to(envelopeRef.current, { 
-        opacity: 1, 
-        scale: 1, 
-        y: 0, 
-        duration: 1.2,
-        ease: 'power3.out'
-      }, '-=0.3')
-      // Info section
-      .to(infoRef.current, { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.8 
-      }, '-=0.6');
+      gsap.set(flapRef.current, { rotateX: 0, transformOrigin: '50% 0%' });
+      gsap.set(sealRef.current, { xPercent: -50, yPercent: -50 });
 
-      // Wax seal subtle pulse (idle state)
+      if (prefersReducedMotion) {
+        gsap.set([copyRef.current, shellRef.current, openButtonRef.current, infoRef.current], {
+          opacity: 1,
+          y: 0,
+        });
+        return;
+      }
+
+      gsap.set(copyRef.current, { opacity: 0, y: 22 });
+      gsap.set(shellRef.current, { opacity: 0, y: 34, scale: 0.94 });
+      gsap.set([openButtonRef.current, infoRef.current], { opacity: 0, y: 16 });
+
+      const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      intro
+        .to(copyRef.current, { opacity: 1, y: 0, duration: 0.78 })
+        .to(shellRef.current, { opacity: 1, y: 0, scale: 1, duration: 0.9 }, '-=0.35')
+        .to([openButtonRef.current, infoRef.current], { opacity: 1, y: 0, duration: 0.55 }, '-=0.35');
+
       gsap.to(sealRef.current, {
-        scale: 1.05,
-        duration: 1.5,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut'
-      });
-
-      // Hint text gentle float
-      gsap.to(hintRef.current, {
-        y: -5,
-        duration: 2,
+        scale: 1.055,
+        duration: 1.55,
         repeat: -1,
         yoyo: true,
         ease: 'sine.inOut',
-        delay: 1.5
       });
     });
 
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+      document.body.style.overflow = previousOverflow;
+    };
   }, []);
 
-  const handleClick = () => {
+  const openEnvelope = () => {
     if (isAnimating.current) return;
     isAnimating.current = true;
+    setIsOpening(true);
 
-    // Boost card z-index when opening
-    if (cardRef.current) {
-      cardRef.current.style.zIndex = '20';
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      setIsHidden(true);
+      onOpen();
+      return;
     }
 
+    gsap.killTweensOf([
+      shellRef.current,
+      cardRef.current,
+      flapRef.current,
+      sealRef.current,
+      openButtonRef.current,
+      infoRef.current,
+      copyRef.current,
+      containerRef.current,
+      overlayRef.current,
+    ]);
+
     const tl = gsap.timeline({
-      defaults: { ease: 'power3.inOut' },
+      defaults: { ease: 'power3.out' },
       onComplete: () => {
         setIsHidden(true);
         onOpen();
-      }
+      },
     });
 
-    // Phase 1: Seal crack effect
-    tl.to(sealRef.current, {
-      scale: 1.3,
-      opacity: 0,
-      duration: 0.4,
-      ease: 'power2.out'
-    })
-    // Phase 2: Flap opens with 3D rotation
-    .to(flapRef.current, {
-      rotateX: 180,
-      opacity: 0,
-      duration: 0.8,
-      ease: 'power2.inOut'
-    })
-    // Phase 2.5: Move envelope down slightly
-    .to(envelopeRef.current, {
-      y: 50,
-      duration: 0.8,
-      ease: 'power2.out'
-    }, '-=0.5')
-    // Phase 3: Card rises elegantly
-    .to(cardRef.current, {
-      y: -180,
-      duration: 1.2,
-      ease: 'power2.out'
-    }, '-=0.8')
-    // Pause for emotional moment
-    .to({}, { duration: 0.5 })
-    // Phase 4: Exit - everything fades with blur
-    .to(containerRef.current, {
-      opacity: 0,
-      scale: 0.95,
-      filter: 'blur(10px)',
-      duration: 0.6,
-      ease: 'power2.in'
-    });
+    tl
+      .to([openButtonRef.current, infoRef.current], {
+        opacity: 0,
+        y: 10,
+        duration: 0.28,
+        ease: 'power2.out',
+      }, 0)
+      .to(shellRef.current, {
+        y: 8,
+        scale: 1.018,
+        duration: 0.36,
+        ease: 'power2.out',
+      }, 0)
+      .to(sealRef.current, {
+        xPercent: -50,
+        yPercent: -50,
+        scale: 0.82,
+        rotate: -8,
+        duration: 0.12,
+        ease: 'power2.in',
+      }, 0.06)
+      .to(sealRef.current, {
+        xPercent: -50,
+        yPercent: -50,
+        scale: 1.48,
+        rotate: 12,
+        opacity: 0,
+        filter: 'blur(4px)',
+        duration: 0.34,
+        ease: 'power3.out',
+      }, 0.18)
+      .to(flapRef.current, {
+        rotateX: -178,
+        y: -3,
+        duration: 0.82,
+        ease: 'power3.inOut',
+      }, 0.22)
+      .set(flapRef.current, { zIndex: 1 }, 0.76)
+      .set(cardRef.current, {
+        visibility: 'visible',
+        opacity: 0,
+        xPercent: -50,
+        y: 14,
+        scale: 0.94,
+        zIndex: 3,
+      }, 0.72)
+      .to(cardRef.current, {
+        opacity: 1,
+        y: 4,
+        scale: 0.98,
+        duration: 0.52,
+        ease: 'power3.out',
+      }, 0.78)
+      .to(cardRef.current, {
+        xPercent: -50,
+        y: -136,
+        scale: 1.025,
+        duration: 0.92,
+        ease: 'expo.out',
+      }, 1.08)
+      .to(shellRef.current, {
+        y: 30,
+        scale: 0.985,
+        duration: 0.78,
+        ease: 'power2.inOut',
+      }, 1.18)
+      .to(copyRef.current, {
+        opacity: 0,
+        y: -14,
+        duration: 0.42,
+        ease: 'power2.inOut',
+      }, 1.56)
+      .to(containerRef.current, {
+        opacity: 0,
+        scale: 0.985,
+        filter: 'blur(8px)',
+        duration: 0.74,
+        ease: 'power2.inOut',
+      }, 2.03)
+      .to(overlayRef.current, {
+        opacity: 0,
+        duration: 0.74,
+        ease: 'power2.inOut',
+      }, 2.03);
   };
 
   if (isHidden) return null;
@@ -158,54 +194,64 @@ export default function EnvelopeDialog({ onOpen }: EnvelopeDialogProps) {
   return (
     <div ref={overlayRef} className="envelope-overlay">
       <div ref={containerRef} className="envelope-container">
-        <p ref={subtitleRef} className="envelope-subtitle">
-          YOU ARE &nbsp; THE LOVE OF &nbsp; MY LIFE
-        </p>
-        <h1 ref={titleRef} className="envelope-title">Wedding Invitation</h1>
-        <p ref={hintRef} className="envelope-hint">Chạm để mở thiệp</p>
-
-        <div 
-          ref={envelopeRef}
-          className="envelope"
-          onClick={handleClick}
-        >
-          {/* Card inside envelope */}
-          <div ref={cardRef} className="envelope-card">
-            <div className="card-inner">
-              <div className="card-border">
-                <p className="card-names">
-                  {data.groom.shortName} <span className="heart">♥</span> {data.bride.shortName}
-                </p>
-                <div className="card-divider"></div>
-                <p className="card-subtitle">TRÂN TRỌNG KÍNH MỜI</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Envelope structure */}
-          <div className="envelope-wrapper">
-            <div ref={flapRef} className="envelope-flap-top"></div>
-            <div className="envelope-fold-left"></div>
-            <div className="envelope-fold-right"></div>
-            <div className="envelope-fold-bottom">
-              <div className="envelope-heart-small">♥</div>
-            </div>
-          </div>
-
-          {/* Wax seal with glow */}
-          <div ref={sealRef} className="wax-seal">
-            <div className="seal-inner">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-              </svg>
-            </div>
-          </div>
+        <div ref={copyRef} className="envelope-copy">
+          <p className="envelope-subtitle">TRÂN TRỌNG KÍNH MỜI</p>
+          <h2 className="envelope-title">Thiệp Cưới</h2>
+          <p className="envelope-hint">Chạm để mở thiệp</p>
         </div>
 
+        <button
+          type="button"
+          ref={shellRef}
+          className={`envelope-shell ${isOpening ? 'is-opening' : ''}`}
+          onClick={openEnvelope}
+          aria-label="Mở thiệp cưới"
+        >
+          <div ref={cardRef} className="letter-card">
+            <div className="letter-card-border">
+              <p className="letter-card-label">Wedding Invitation</p>
+              <p className="letter-card-names">
+                <span className="letter-card-person">{data.groom.shortName}</span>
+                <span className="letter-card-ampersand">&amp;</span>
+                <span className="letter-card-person">{data.bride.shortName}</span>
+              </p>
+              <div className="letter-card-divider" />
+              <p className="letter-card-date">{data.weddingDateDisplay}</p>
+            </div>
+          </div>
+
+          <div className="envelope-cast-shadow" aria-hidden="true" />
+          <div className="envelope-back-panel" aria-hidden="true" />
+
+          <div ref={flapRef} className="envelope-flap-panel" aria-hidden="true">
+            <div className="envelope-flap-highlight" />
+          </div>
+
+          <div className="envelope-front-pocket" aria-hidden="true">
+            <div className="envelope-pocket-left" />
+            <div className="envelope-pocket-right" />
+            <div className="envelope-pocket-bottom" />
+            <div className="envelope-pocket-lip" />
+          </div>
+
+          <div ref={sealRef} className="envelope-seal" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          ref={openButtonRef}
+          className="envelope-open-btn"
+          onClick={openEnvelope}
+        >
+          Mở thiệp
+        </button>
+
         <div ref={infoRef} className="envelope-info">
-          <p className="info-text">TRÂN TRỌNG KÍNH MỜI</p>
-          <p className="info-subtext">ĐẾN THAM DỰ HÔN LỄ CỦA CHÚNG TÔI</p>
-          
+          <p className="info-text">HÔN LỄ CỦA CHÚNG TÔI</p>
           <div className="wedding-datetime">
             <div className="datetime-block">
               <span className="datetime-value">
@@ -213,17 +259,17 @@ export default function EnvelopeDialog({ onOpen }: EnvelopeDialogProps) {
               </span>
               <span className="datetime-label">GIỜ</span>
             </div>
-            <div className="datetime-divider"></div>
+            <div className="datetime-divider" />
             <div className="datetime-block">
               <span className="datetime-value">
                 {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][data.weddingDate.getDay()]}
               </span>
               <span className="datetime-label">THỨ</span>
             </div>
-            <div className="datetime-divider"></div>
+            <div className="datetime-divider" />
             <div className="datetime-block">
               <span className="datetime-value">
-                {data.weddingDate.getDate()}/{(data.weddingDate.getMonth() + 1)}/{data.weddingDate.getFullYear()}
+                {data.weddingDate.getDate()}/{data.weddingDate.getMonth() + 1}/{data.weddingDate.getFullYear()}
               </span>
               <span className="datetime-label">NGÀY</span>
             </div>
@@ -231,10 +277,9 @@ export default function EnvelopeDialog({ onOpen }: EnvelopeDialogProps) {
         </div>
       </div>
 
-      {/* Decorative particles */}
-      <div className="envelope-particles">
+      <div className="envelope-particles" aria-hidden="true">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="particle" style={{ '--delay': `${i * 0.5}s` } as React.CSSProperties}></div>
+          <div key={i} className="particle" style={{ '--delay': `${i * 0.5}s` } as React.CSSProperties} />
         ))}
       </div>
     </div>

@@ -1,34 +1,40 @@
 import { useState } from 'react';
-import { useWedding } from '../hooks/useWedding';
+import { Link } from 'react-router-dom';
+import { useWedding } from '../hooks/weddingContext';
+import { setImageFallback } from '../lib/imageFallback';
+import { normalizePhone, saveRsvp, validateRsvp, type RsvpSaveMode } from '../lib/rsvp';
+import { getWeddingPhase } from '../lib/weddingState';
 
 export default function RSVPPage() {
   const { data, showToast } = useWedding();
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    events: [] as string[],
-    plusOnes: '',
+    eventIds: [] as number[],
+    plusOnes: '0',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [saveMode, setSaveMode] = useState<RsvpSaveMode | null>(null);
+  const phase = getWeddingPhase(data.weddingDate);
 
-  const handleEventChange = (event: string, checked: boolean) => {
+  const handleEventChange = (eventId: number, checked: boolean) => {
     setFormData((prev) => ({
       ...prev,
-      events: checked
-        ? [...prev.events, event]
-        : prev.events.filter((e) => e !== event),
+      eventIds: checked
+        ? [...prev.eventIds, eventId]
+        : prev.eventIds.filter((id) => id !== eventId),
     }));
   };
 
   const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = 'Vui lòng nhập tên';
-    if (!formData.phone.trim()) newErrors.phone = 'Vui lòng nhập số điện thoại';
-    else if (!/^[0-9]{10,11}$/.test(formData.phone.trim())) {
-      newErrors.phone = 'Số điện thoại không hợp lệ';
-    }
+    const newErrors = validateRsvp({
+      name: formData.name,
+      phone: normalizePhone(formData.phone),
+      eventIds: formData.eventIds,
+      plusOnes: Number(formData.plusOnes),
+    });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -38,145 +44,169 @@ export default function RSVPPage() {
     if (!validate()) return;
 
     setIsSubmitting(true);
-    // Simulate API call - save to localStorage
-    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const rsvps = JSON.parse(localStorage.getItem('wedding-rsvps') || '[]');
-    rsvps.push({
-      ...formData,
-      submittedAt: new Date().toISOString(),
-    });
-    localStorage.setItem('wedding-rsvps', JSON.stringify(rsvps));
-
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    showToast('Xác nhận tham dự thành công!', 'success');
+    try {
+      const mode = await saveRsvp({
+        name: formData.name.trim(),
+        phone: normalizePhone(formData.phone),
+        eventIds: formData.eventIds,
+        plusOnes: Number(formData.plusOnes),
+      });
+      setSaveMode(mode);
+      showToast(
+        mode === 'firestore'
+          ? 'Xác nhận tham dự thành công!'
+          : 'Đã lưu xác nhận trên thiết bị này.',
+        mode === 'firestore' ? 'success' : 'info',
+      );
+    } catch {
+      showToast('Không thể lưu xác nhận, thử lại nhé!', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        {/* Header */}
-        <div className="relative bg-gradient-to-b from-primary/20 to-primary/5 pb-8 pt-10 text-center overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
-          <div className="w-36 h-36 mx-auto rounded-full border-4 border-primary overflow-hidden mb-4 shadow-lg">
-            <img
-              src={data.heroSlides[0]}
-              alt="Wedding"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150';
-              }}
-            />
-          </div>
-          <h2 className="font-coiny text-2xl uppercase mb-1 text-gray-700 tracking-wider">Xác nhận tham dự</h2>
-          <p className="font-jura text-gray-500 mb-2">Đám cưới của</p>
-          <div className="flex items-center justify-center gap-3">
-            <span className="font-jura text-xl text-gray-700">{data.groom.shortName}</span>
-            <span className="heart-icon w-8 h-8"></span>
-            <span className="font-jura text-xl text-gray-700">{data.bride.shortName}</span>
-          </div>
-        </div>
+  const header = (
+    <header className="rsvp-hero">
+      <div className="rsvp-hero-media" aria-hidden="true">
+        <img
+          src={data.heroSlides[0]}
+          alt=""
+          onError={(e) => setImageFallback(e.currentTarget)}
+        />
+      </div>
+      <div className="rsvp-hero-overlay" aria-hidden="true" />
+      <div className="rsvp-hero-content">
+        <Link to="/" className="rsvp-back-link">
+          <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Về thiệp cưới
+        </Link>
+        <p className="rsvp-eyebrow">{phase === 'after' ? 'Wedding Memories' : 'Wedding RSVP'}</p>
+        <h1 className="rsvp-title">{phase === 'after' ? 'Ngày vui đã diễn ra' : 'Xác nhận tham dự'}</h1>
+        <p className="rsvp-couple">
+          {data.groom.shortName}
+          <span>&amp;</span>
+          {data.bride.shortName}
+        </p>
+        <p className="rsvp-date">{data.weddingDateDisplay}</p>
+      </div>
+    </header>
+  );
 
-        <div className="flex-1 flex flex-col items-center justify-center p-6">
-          <div className="bg-white rounded-2xl p-8 text-center shadow-lg max-w-md">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  if (phase === 'after') {
+    return (
+      <div className="rsvp-page">
+        {header}
+        <main className="rsvp-main">
+          <section className="rsvp-card rsvp-success-card">
+            <h2>Cảm ơn bạn đã ghé thăm</h2>
+            <p>Phần xác nhận tham dự đã khép lại. Mời bạn trở về xem những kỷ niệm và gửi lời chúc đến chúng mình.</p>
+            <Link to="/#album" className="btn-primary"><span>Xem album kỷ niệm</span></Link>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
+  if (saveMode) {
+    return (
+      <div className="rsvp-page">
+        {header}
+        <main className="rsvp-main">
+          <section className="rsvp-card rsvp-success-card" aria-live="polite">
+            <div className="rsvp-success-icon">
+              <svg width="34" height="34" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold mb-2">Cảm ơn bạn!</h3>
-            <p className="text-gray-600 mb-6">
-              Cảm ơn bạn rất nhiều vì sự hiện diện cùng những lời chúc tốt đẹp!
+            <h2>Cảm ơn bạn!</h2>
+            <p>
+              {saveMode === 'firestore'
+                ? 'Xác nhận của bạn đã được gửi đến chúng mình. Sự hiện diện của bạn là niềm vui lớn với chúng mình.'
+                : 'Xác nhận đang được lưu trên thiết bị này vì hệ thống trực tuyến chưa được cấu hình. Vui lòng liên hệ trực tiếp với cô dâu hoặc chú rể.'}
             </p>
-            <a href="/" className="btn-primary inline-block">
-              ← Về website đám cưới
-            </a>
-          </div>
-        </div>
+            <Link to="/" className="btn-primary">
+              <span>Về website đám cưới</span>
+            </Link>
+          </section>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <div className="relative bg-gradient-to-b from-primary/20 to-primary/5 pb-8 pt-10 text-center overflow-hidden">
-        {/* Decorative top border */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
-        <div className="w-36 h-36 mx-auto rounded-full border-4 border-primary overflow-hidden mb-4 shadow-lg">
-          <img
-            src={data.heroSlides[0]}
-            alt="Wedding"
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150';
-            }}
-          />
-        </div>
-        <h2 className="font-coiny text-2xl uppercase mb-1 text-gray-700 tracking-wider">Xác nhận tham dự</h2>
-        <p className="font-jura text-gray-500 mb-2">Đám cưới của</p>
-        <div className="flex items-center justify-center gap-3">
-          <span className="font-jura text-xl text-gray-700">{data.groom.shortName}</span>
-          <span className="heart-icon w-8 h-8"></span>
-          <span className="font-jura text-xl text-gray-700">{data.bride.shortName}</span>
-        </div>
-        <p className="mt-2 text-sm text-primary font-medium tracking-widest">{data.weddingDateDisplay}</p>
-      </div>
+    <div className="rsvp-page">
+      {header}
 
-      {/* Form */}
-      <main className="max-w-lg mx-auto p-6 flex-1 w-full">
-        <form onSubmit={handleSubmit} noValidate>
-          {/* Name */}
+      <main className="rsvp-main">
+        <form className="rsvp-card" onSubmit={handleSubmit} noValidate>
+          <div className="rsvp-form-head">
+            <p className="section-eyebrow">Guest Confirmation</p>
+            <h2>Thông tin tham dự</h2>
+            <p>Vui lòng để lại thông tin để chúng mình chuẩn bị đón tiếp chu đáo.</p>
+          </div>
+
           <div className="form-group">
-            <label className="form-label text-left block">Nhập Tên (*)</label>
+            <label className="form-label" htmlFor="rsvp-name">Tên của bạn *</label>
             <input
+              id="rsvp-name"
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className={`form-input text-center ${errors.name ? 'border-red-500' : ''}`}
-              placeholder="---"
+              className={`form-input ${errors.name ? 'input-error' : ''}`}
+              placeholder="Ví dụ: Nguyễn Văn An"
+              autoComplete="name"
+              required
             />
             {errors.name && <p className="form-error">{errors.name}</p>}
           </div>
 
-          {/* Phone */}
           <div className="form-group">
-            <label className="form-label text-left block">Nhập số Điện thoại (*)</label>
+            <label className="form-label" htmlFor="rsvp-phone">Số điện thoại *</label>
             <input
+              id="rsvp-phone"
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className={`form-input text-center ${errors.phone ? 'border-red-500' : ''}`}
-              placeholder="---"
+              className={`form-input ${errors.phone ? 'input-error' : ''}`}
+              placeholder="Ví dụ: 0912345678"
+              autoComplete="tel"
+              inputMode="tel"
+              required
             />
             {errors.phone && <p className="form-error">{errors.phone}</p>}
           </div>
 
-          {/* Events */}
-          <div className="form-group border rounded-lg p-4 bg-white">
-            <p className="font-semibold text-gray-600 mb-3">Chọn sự kiện tham dự</p>
-            {data.events.map((event) => (
-              <label key={event.id} className="form-checkbox mb-2">
-                <input
-                  type="checkbox"
-                  checked={formData.events.includes(event.name)}
-                  onChange={(e) => handleEventChange(event.name, e.target.checked)}
-                />
-                <span>{event.name}</span>
-              </label>
-            ))}
-          </div>
+          <fieldset className="rsvp-fieldset">
+            <legend>Chọn sự kiện tham dự *</legend>
+            <div className="rsvp-event-options">
+              {data.events.map((event) => (
+                <label key={event.id} className="rsvp-event-option">
+                  <input
+                    type="checkbox"
+                    checked={formData.eventIds.includes(event.id)}
+                    onChange={(e) => handleEventChange(event.id, e.target.checked)}
+                  />
+                  <span>
+                    <strong>{event.name}</strong>
+                    <small>{event.timeDisplay} · {event.location}</small>
+                  </span>
+                </label>
+              ))}
+            </div>
+            {errors.events && <p className="form-error">{errors.events}</p>}
+          </fieldset>
 
-          {/* Plus Ones */}
-          <div className="form-group border rounded-lg p-4 bg-gray-200">
-            <p className="font-semibold text-gray-600 mb-3">Bạn đi cùng ai?</p>
+          <div className="form-group">
+            <label className="form-label" htmlFor="rsvp-plus-ones">Số người đi cùng</label>
             <select
+              id="rsvp-plus-ones"
               value={formData.plusOnes}
               onChange={(e) => setFormData({ ...formData, plusOnes: e.target.value })}
-              className="form-select py-3"
+              className="form-select"
             >
-              <option value="">Bạn có người đi cùng không?</option>
               <option value="0">Đi một mình</option>
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                 <option key={num} value={num}>
@@ -186,25 +216,24 @@ export default function RSVPPage() {
             </select>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-primary hover:bg-primary-dark text-white font-jura text-lg py-4 rounded-full transition-colors disabled:opacity-50 shadow-md"
+            className="btn-primary rsvp-submit-btn"
           >
-            {isSubmitting ? 'Đang xử lý...' : 'Xác nhận'}
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin" width="18" height="18" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <span>Đang xử lý...</span>
+              </>
+            ) : (
+              <span>Xác nhận tham dự</span>
+            )}
           </button>
         </form>
-
-        {/* Back link */}
-        <div className="text-center mt-6">
-          <a href="/" className="text-primary hover:underline inline-flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Về website đám cưới
-          </a>
-        </div>
       </main>
     </div>
   );

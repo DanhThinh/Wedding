@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { useWedding } from '../hooks/useWedding';
+import { useWedding } from '../hooks/weddingContext';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { createGoogleCalendarUrl, downloadIcs } from '../lib/calendar';
 
 const CalendarIcons = {
   google: (
@@ -23,43 +24,19 @@ const CalendarIcons = {
   ),
 };
 
-function generateICS(event: { name: string; date: string; time: string; address: string; description: string }) {
-  const fmt = (d: string, t: string) => {
-    const dt = new Date(`${d}T${t}:00`);
-    return dt.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  };
-  const start = fmt(event.date, event.time);
-  const end = (() => {
-    const d = new Date(`${event.date}T${event.time}:00`);
-    d.setHours(d.getHours() + 3);
-    return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  })();
-  const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Wedding//EN\nBEGIN:VEVENT\nUID:${Date.now()}@wedding\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nDTSTART:${start}\nDTEND:${end}\nSUMMARY:${event.name}\nLOCATION:${event.address}\nDESCRIPTION:${event.description}\nEND:VEVENT\nEND:VCALENDAR`;
-  const blob = new Blob([ics], { type: 'text/calendar' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `${event.name.replace(/\s+/g, '-')}.ics`; a.click();
-  URL.revokeObjectURL(url);
-}
-
-function gcalUrl(event: { name: string; date: string; time: string; address: string; description: string }) {
-  const start = `${event.date.replace(/-/g, '')}T${event.time.replace(':', '')}00`;
-  const end = (() => {
-    const d = new Date(`${event.date}T${event.time}:00`);
-    d.setHours(d.getHours() + 3);
-    return d.toISOString().replace(/[-:]/g,'').split('.')[0];
-  })();
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.name)}&dates=${start}/${end}&location=${encodeURIComponent(event.address)}&details=${encodeURIComponent(event.description)}`;
-}
-
 function mapsUrl(address: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+}
+
+function hasMappableAddress(address: string) {
+  return address.trim().length > 0 && !/cập nhật|chưa có|đang cập nhật/i.test(address);
 }
 
 export default function EventsSection() {
   const { data } = useWedding();
   const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.1 });
   const [activePopover, setActivePopover] = useState<number | null>(null);
+  const [expandedMap, setExpandedMap] = useState<number | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,23 +49,45 @@ export default function EventsSection() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // Google Maps embed URL
+  // CÁCH 1: Dùng Embed API (cần API key, đẹp hơn, custom được)
+  // Lấy key tại: https://console.cloud.google.com/google/maps-apis/
+  // const getMapEmbedUrl = (address: string) => {
+  //   return `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodeURIComponent(address)}&zoom=15`;
+  // };
+  
+  // CÁCH 2: Dùng iframe search (không cần API key, hoạt động ngay)
+  const getMapEmbedUrl = (address: string) => {
+    return `https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+  };
+
+  // Chỉ đường (Navigation mode)
+  const getDirectionsUrl = (address: string) => {
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+  };
+
   return (
-    <section id="events" ref={ref} className="py-24 section-white">
+    <section id="events" ref={ref} className="py-24 section-white events-section">
       <div className="container-custom">
 
-        <div className="text-center mb-12">
+        <div className={`text-center mb-12 animate-on-scroll ${isVisible ? 'visible' : ''}`}>
           <span className="section-eyebrow">Wedding Schedule</span>
           <h2 className="section-title">Sự Kiện Cưới</h2>
+          <p className="section-subtitle">
+            Hân hạnh được đón tiếp quý khách
+          </p>
         </div>
 
         <div className="events-grid">
-          {data.events.map((event, index) => (
-            <div
-              key={event.id}
-              className={`event-card animate-on-scroll ${isVisible ? 'visible' : ''}`}
-              style={{ transitionDelay: `${0.15 * index}s` }}
-            >
-              {/* Icon */}
+          {data.events.map((event, index) => {
+            const canShowMap = hasMappableAddress(event.address);
+
+            return (
+              <div
+                key={event.id}
+                className={`event-card animate-on-scroll ${isVisible ? 'visible' : ''}`}
+                style={{ transitionDelay: `${0.08 * index}s` }}
+              >
               <div className="event-icon-wrap">
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" style={{ color: 'var(--primary)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -101,20 +100,45 @@ export default function EventsSection() {
               <p className="event-address">{event.address}</p>
 
               <div className="event-actions">
-                {/* Google Maps link */}
-                <a
-                  href={mapsUrl(event.address)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="event-map-btn"
-                  aria-label={`Xem bản đồ ${event.name}`}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="12" cy="10" r="3" strokeLinecap="round"/>
-                  </svg>
-                  Bản đồ
-                </a>
+                {canShowMap ? (
+                  <>
+                    {/* Toggle map embed */}
+                    <button
+                      onClick={() => setExpandedMap(expandedMap === event.id ? null : event.id)}
+                      className="event-map-btn"
+                      aria-label={expandedMap === event.id ? 'Ẩn bản đồ' : 'Xem bản đồ'}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="12" cy="10" r="3" strokeLinecap="round"/>
+                      </svg>
+                      {expandedMap === event.id ? 'Ẩn' : 'Bản đồ'}
+                    </button>
+
+                    {/* Chỉ đường */}
+                    <a
+                      href={getDirectionsUrl(event.address)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="event-map-btn"
+                      aria-label={`Chỉ đường đến ${event.name}`}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                        <path d="M9 11l3 3L22 4M3 20l3.09-6.18a3 3 0 012.71-1.82h0a3 3 0 012.71 1.82L15 20" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M3 20h12" strokeLinecap="round"/>
+                      </svg>
+                      Chỉ đường
+                    </a>
+                  </>
+                ) : (
+                  <button type="button" className="event-map-btn" disabled>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="12" cy="10" r="3" strokeLinecap="round"/>
+                    </svg>
+                    Bản đồ sẽ cập nhật
+                  </button>
+                )}
 
                 {/* Add to calendar */}
                 <div className="relative" ref={activePopover === event.id ? popoverRef : undefined}>
@@ -132,15 +156,15 @@ export default function EventsSection() {
 
                   {activePopover === event.id && (
                     <div className="calendar-popover">
-                      <a href={gcalUrl(event)} target="_blank" rel="noopener noreferrer" className="calendar-popover-item">
+                      <a href={createGoogleCalendarUrl(event)} target="_blank" rel="noopener noreferrer" className="calendar-popover-item">
                         {CalendarIcons.google}
                         <span>Google Calendar</span>
                       </a>
-                      <button onClick={() => generateICS(event)} className="calendar-popover-item w-full">
+                      <button onClick={() => downloadIcs(event)} className="calendar-popover-item w-full">
                         {CalendarIcons.apple}
                         <span>Apple Calendar</span>
                       </button>
-                      <button onClick={() => generateICS(event)} className="calendar-popover-item w-full">
+                      <button onClick={() => downloadIcs(event)} className="calendar-popover-item w-full">
                         {CalendarIcons.outlook}
                         <span>Outlook / ICS</span>
                       </button>
@@ -148,8 +172,35 @@ export default function EventsSection() {
                   )}
                 </div>
               </div>
+
+              {/* Embedded Google Map (collapsible) */}
+              {canShowMap && expandedMap === event.id && (
+                <div className="event-map-embed">
+                  <iframe
+                    title={`Bản đồ ${event.name}`}
+                    width="100%"
+                    height="280"
+                    style={{ border: 0, borderRadius: 'var(--r-md)' }}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={getMapEmbedUrl(event.address)}
+                  />
+                  <div className="event-map-footer">
+                    <a
+                      href={mapsUrl(event.address)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="event-map-link"
+                    >
+                      Mở trong Google Maps →
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

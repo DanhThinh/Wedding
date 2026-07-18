@@ -1,0 +1,187 @@
+[data-theme="dark"] {
+  /* Redefine màu nền/chữ nhưng giữ tông hồng rose-gold lãng mạn */
+  --primary:       #E8A598;   /* hồng sáng hơn để nổi trên nền tối */
+  --primary-light: rgba(232, 165, 152, 0.16);
+  --primary-dark:  #D4887A;
+  --rose-gold:     #D9B08C;
+  --cream:         #211A28;    /* tím than trầm */
+  --blush:         #2A1F30;
+  --blush-mid:     #4A3A50;
+  --text-dark:     #F3E9E6;    /* chữ sáng */
+  --text-mid:      #C5B3B0;
+  --text-light:    #8A7A80;
+  --white:         #1A1420;    /* "trắng" → nền tối */
+  --border:        rgba(232, 165, 152, 0.22);
+
+  --shadow-xs:      0 1px 4px rgba(0,0,0,0.4);
+  --shadow-sm:      0 2px 10px rgba(0,0,0,0.45);
+  --shadow-md:      0 6px 24px rgba(0,0,0,0.5);
+  --shadow-lg:      0 12px 48px rgba(0,0,0,0.55);
+  --shadow-primary: 0 8px 32px rgba(232,165,152,0.3);
+  --shadow-gold:    0 6px 20px rgba(217,176,140,0.28);
+}
+
+/* Smooth transition khi đổi theme */
+body,
+.section-white,
+.section-cream,
+.couple-card,
+.timeline-card,
+.event-card,
+.wish-item,
+.glass-card {
+  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+}
+
+/* ─── Nền tổng thể ─── */
+[data-theme="dark"] body {
+  background: #1A1420;
+  background-image:
+    radial-gradient(ellipse 60% 50% at 20% 10%, rgba(232,165,152,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 90%, rgba(217,176,140,0.07) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* ─── Section backgrounds ─── */
+[data-theme="dark"] .section-white {
+  background: #1F1826;
+}
+[data-theme="dark"] .section-cream {
+  background: #181220;
+}
+
+/* ─── Cards & surfaces (override hardcoded white) ─── */
+[data-theme="dark"] .couple-card,
+[data-theme="dark"] .timeline-card,
+[data-theme="dark"] .event-card,
+[data-theme="dark"] .wish-item,
+[data-theme="dark"] .guestbook-form-wrap,
+[data-theme="dark"] .couple-intro-box,
+[data-theme="dark"] .calendar-popover,
+[data-theme="dark"] .mobile-menu-drawer,
+[data-theme="dark"] .swiper-slide-content {
+  background: #261E2E;
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-textarea,
+[data-theme="dark"] textarea,
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="tel"] {
+  background: #1F1826;
+  color: var(--text-dark);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .suggested-wish,
+[data-theme="dark"] .event-map-btn {
+  background: #2A2130;
+  border-color: var(--border);
+  color: var(--text-mid);
+}
+
+/* ─── Header ─── */
+[data-theme="dark"] .site-header.scrolled {
+  background: rgba(26, 20, 32, 0.92);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+}
+[data-theme="dark"] .site-header.scrolled .nav-link { color: var(--text-mid); }
+[data-theme="dark"] .mobile-menu-drawer {
+  border-top-color: var(--border);
+}
+
+/* ─── Glass cards ─── */
+[data-theme="dark"] .glass-card {
+  background: rgba(38, 30, 46, 0.8);
+}
+
+/* ─── Countdown đã tối sẵn, làm sâu hơn ─── */
+[data-theme="dark"] .countdown-bg {
+  background: linear-gradient(145deg, #16101C 0%, #241A2C 50%, #16101C 100%);
+}
+
+/* ─── Scrollbar ─── */
+[data-theme="dark"] ::-webkit-scrollbar-track { background: #1F1826; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: var(--blush-mid); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* ─── Floating control buttons trong dark ─── */
+[data-theme="dark"] .music-toggle,
+[data-theme="dark"] .theme-toggle {
+  background: rgba(38, 30, 46, 0.85);
+  color: var(--primary);
+  border-color: var(--border);
+
+  &:hover {
+    background: rgba(48, 38, 58, 0.95);
+  }
+}
+
+/* Theme toggle: hiệu ứng glow ấm cho icon mặt trăng/trời */
+.theme-toggle.dark {
+  color: #F6D98B; /* vàng ấm cho mặt trời */
+}
+
+/* ─── Gallery placeholder bg ─── */
+[data-theme="dark"] .gallery-item,
+[data-theme="dark"] .gallery-masonry-grid .gallery-item {
+  background: #2A2130;
+}
+
+/* ─── Ảnh dịu hơn 1 chút trong dark mode ─── */
+[data-theme="dark"] .hero-section .hero-bg-slide,
+[data-theme="dark"] .timeline-card-img img,
+[data-theme="dark"] .couple-portrait img {
+  filter: brightness(0.92) saturate(1.05);
+}
+
+/* ─── Badge giữ độ tương phản ─── */
+[data-theme="dark"] .gallery-badge,
+[data-theme="dark"] .swiper-badge {
+  background: rgba(38, 30, 46, 0.9);
+  color: var(--primary);
+}
+
+
+/* ===================================================
+   GUESTBOOK REALTIME BADGE
+   =================================================== */
+.guestbook-realtime-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.4rem 1rem;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: var(--r-xl);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: #4CAF50;
+}
+
+.realtime-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4CAF50;
+  animation: realtimePulse 2s ease-in-out infinite;
+}
+
+@keyframes realtimePulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.5);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 0 6px rgba(76, 175, 80, 0);
+  }
+}
+
+[data-theme="dark"] .guestbook-realtime-badge {
+  background: rgba(76, 175, 80, 0.15);
+  color: #6BC46F;
+}

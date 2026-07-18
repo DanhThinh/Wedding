@@ -9,9 +9,9 @@ export const weddingData = {
     image: '/images/groom.webp',
     bank: {
       name: 'NGUYEN DANH THINH',
-      number: '1234567890',
-      bankName: 'Vietcombank',
-      qrCode: '/images/qr-groom.png',
+      number: '',
+      bankName: '',
+      qrCode: '',
     },
   },
   bride: {
@@ -22,9 +22,9 @@ export const weddingData = {
     image: '/images/bride.webp',
     bank: {
       name: 'PHAM THI THUY HANG',
-      number: '0987654321',
-      bankName: 'Techcombank',
-      qrCode: '/images/qr-bride.png',
+      number: '',
+      bankName: '',
+      qrCode: '',
     },
   },
 
@@ -33,18 +33,18 @@ export const weddingData = {
 
   // Wedding Date
   weddingDate: new Date('2025-01-11T11:00:00'),
-  weddingDateDisplay: '11 tháng 01 2025',
+  weddingDateDisplay: '11 tháng 01 năm 2025',
 
   // Family Info
   groomFamily: {
-    coPhu: 'Nguyễn Văn A',
-    ba: 'Nguyễn Văn B',
-    me: 'Trần Thị C',
+    coPhu: '',
+    ba: '',
+    me: '',
   },
   brideFamily: {
-    coPhu: 'Phạm Văn X',
-    ba: 'Phạm Văn Y',
-    me: 'Lê Thị Z',
+    coPhu: '',
+    ba: '',
+    me: '',
   },
 
   // Wedding Intro
@@ -87,9 +87,9 @@ export const weddingData = {
       name: 'Tiệc nhà trai',
       date: '2025-01-11',
       time: '11:00',
-      timeDisplay: '11:00 AM',
+      timeDisplay: '11:00',
       location: 'Tư gia nhà trai',
-      address: '123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh',
+      address: 'Địa chỉ sẽ cập nhật',
       description: 'Tiệc cưới tại nhà trai',
     },
     {
@@ -97,9 +97,9 @@ export const weddingData = {
       name: 'Tiệc nhà gái',
       date: '2025-01-10',
       time: '17:00',
-      timeDisplay: '17:00 PM',
+      timeDisplay: '17:00',
       location: 'Tư gia nhà gái',
-      address: '456 Đường DEF, Quận UVW, TP. Hồ Chí Minh',
+      address: 'Địa chỉ sẽ cập nhật',
       description: 'Tiệc cưới tại nhà gái',
     },
     {
@@ -107,9 +107,9 @@ export const weddingData = {
       name: 'Lễ Thành Hôn',
       date: '2025-01-11',
       time: '18:00',
-      timeDisplay: '18:00 PM',
-      location: 'Trung tâm Tiệc cưới ABC',
-      address: '789 Đường GHI, Quận RST, TP. Hồ Chí Minh',
+      timeDisplay: '18:00',
+      location: 'Địa điểm sẽ cập nhật',
+      address: 'Địa chỉ sẽ cập nhật',
       description: 'Lễ cưới chính thức',
     },
   ],

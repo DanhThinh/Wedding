@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/rsvp", "destination": "/index.html" }
+  ]
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useWedding } from '../hooks/useWedding';
+import { useWedding } from '../hooks/weddingContext';
 
 interface ModalProps {
   isOpen: boolean;
@@ -25,6 +25,8 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     return () => document.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);
 
+  if (!isOpen) return null;
+
   return (
     <div
       className={`modal-overlay ${isOpen ? 'open' : ''}`}
@@ -37,7 +39,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     >
       <div
         ref={modalRef}
-        className="modal-content"
+        className="modal-box"
         tabIndex={-1}
       >
         <div className="flex items-center justify-between mb-6">
@@ -72,12 +74,13 @@ export function GuestbookModal() {
     }
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    addWish(name.trim(), message.trim());
-    setName('');
-    setMessage('');
+    const ok = await addWish(name.trim(), message.trim());
+    if (ok) {
+      setName('');
+      setMessage('');
+      closeModal('guestbook');
+    }
     setIsSubmitting(false);
-    closeModal('guestbook');
   };
 
   return (

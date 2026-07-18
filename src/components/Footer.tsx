@@ -1,17 +1,22 @@
-import { useWedding } from '../hooks/useWedding';
+import { Link } from 'react-router-dom';
+import { useWedding } from '../hooks/weddingContext';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { getWeddingPhase, hasGiftDetails } from '../lib/weddingState';
 
 const sections = [
-  { label: 'Cặp Đôi', href: '#couple' },
-  { label: 'Chuyện Tình', href: '#story' },
-  { label: 'Đếm Ngược', href: '#countdown' },
+  { label: 'Câu chuyện', href: '#story' },
   { label: 'Album', href: '#album' },
-  { label: 'Sự Kiện', href: '#events' },
-  { label: 'Sổ Lưu Bút', href: '#guestbook' },
-  { label: 'Mừng Cưới', href: '#giftbox' },
+  { label: 'Sự kiện', href: '#events' },
+  { label: 'Lời chúc', href: '#guestbook' },
 ];
 
 export default function Footer() {
   const { data } = useWedding();
+  const phase = getWeddingPhase(data.weddingDate);
+  const visibleSections = hasGiftDetails(data)
+    ? [...sections, { label: 'Mừng cưới', href: '#giftbox' }]
+    : sections;
+  const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.1 });
 
   const scroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -19,11 +24,11 @@ export default function Footer() {
   };
 
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" ref={ref}>
       <div className="container-custom">
 
         {/* Main footer content */}
-        <div className="text-center mb-10">
+        <div className={`text-center mb-10 animate-on-scroll ${isVisible ? 'visible' : ''}`}>
           {/* Ornament */}
           <div className="ornament" aria-hidden="true">
             <span className="ornament-icon" />
@@ -40,8 +45,12 @@ export default function Footer() {
         </div>
 
         {/* Nav links */}
-        <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-8" aria-label="Footer navigation">
-          {sections.map(s => (
+        <nav
+          className={`flex flex-wrap justify-center gap-x-5 gap-y-2 mb-8 animate-on-scroll ${isVisible ? 'visible' : ''}`}
+          style={{ transitionDelay: '0.15s' }}
+          aria-label="Footer navigation"
+        >
+          {visibleSections.map(s => (
             <a
               key={s.href}
               href={s.href}
@@ -57,7 +66,7 @@ export default function Footer() {
         <div style={{ height: 1, background: 'var(--border)', margin: '0 0 1.5rem' }} />
 
         {/* Bottom */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 animate-on-scroll ${isVisible ? 'visible' : ''}`} style={{ transitionDelay: '0.25s' }}>
           <p className="footer-credit">
             Được tạo với{' '}
             <span style={{ color: 'var(--primary)' }}>♥</span>{' '}
@@ -66,13 +75,13 @@ export default function Footer() {
               {data.groom.shortName} &amp; {data.bride.shortName}
             </span>
           </p>
-          <a
-            href="/rsvp"
-            className="footer-credit px-5 py-2 rounded-full font-semibold"
+          {phase !== 'after' && <Link
+            to="/rsvp"
+            className="footer-credit px-5 py-2 rounded-full font-semibold footer-rsvp-btn"
             style={{ background: 'var(--primary)', color: 'white', textDecoration: 'none' }}
           >
             Xác nhận tham dự ✦
-          </a>
+          </Link>}
         </div>
       </div>
     </footer>

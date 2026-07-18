@@ -63,7 +63,7 @@ Thay các ảnh trong thư mục `public/images/`:
 | `album-1.webp` đến `album-8.webp` | Ảnh album cưới |
 | `qr-groom.png` | QR code chuyển khoản chú rể |
 | `qr-bride.png` | QR code chuyển khoản cô dâu |
-| `favicon.png` | Icon tab trình duyệt |
+| `favicon.svg` | Icon tab trình duyệt |
 
 ## 📝 Thay đổi Nội dung
 
@@ -116,7 +116,7 @@ export const weddingData = {
 
 ## 🛠 Tech Stack
 
-- **Framework**: React 18 + TypeScript
+- **Framework**: React 19 + TypeScript
 - **Build**: Vite
 - **Styling**: Tailwind CSS + SCSS
 - **Animation**: CSS animations + transitions
@@ -132,8 +132,18 @@ export const weddingData = {
 
 ## 🔧 Mock API
 
-- **Guestbook**: Lưu vào localStorage (`wedding-wishes`)
-- **RSVP**: Lưu vào localStorage (`wedding-rsvps`)
+- **Guestbook**: Firestore realtime khi có cấu hình; localStorage dùng cho development fallback.
+- **RSVP**: Gửi vào Firestore khi có cấu hình; localStorage fallback không gửi dữ liệu đến chủ tiệc.
+
+## Firebase và kiểm thử
+
+Sao chép `.env.example` thành `.env`, điền cấu hình Firebase rồi deploy `firestore.rules`.
+
+```bash
+npm run test
+npm run lint
+npm run build
+```
 
 ---
 

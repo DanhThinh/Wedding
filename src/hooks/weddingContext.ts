@@ -1,0 +1,45 @@
+import { createContext, useContext } from 'react';
+import type { weddingData } from '../data/weddingData';
+import type { Wish } from './useGuestbook';
+
+export interface ToastState {
+  show: boolean;
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
+export interface ModalState {
+  guestbook: boolean;
+  rsvp: boolean;
+  giftbox: boolean;
+  calendar: boolean;
+}
+
+export interface WeddingContextType {
+  data: typeof weddingData;
+  toast: ToastState;
+  showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
+  modals: ModalState;
+  openModal: (modal: keyof ModalState) => void;
+  closeModal: (modal: keyof ModalState) => void;
+  wishes: Wish[];
+  addWish: (name: string, message: string) => Promise<boolean>;
+  isRealtimeGuestbook: boolean;
+  guestbookLoading: boolean;
+  isMusicPlaying: boolean;
+  hasBackgroundMusic: boolean;
+  toggleMusic: () => void;
+  startMusic: () => void;
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+}
+
+export const WeddingContext = createContext<WeddingContextType | null>(null);
+
+export function useWedding() {
+  const context = useContext(WeddingContext);
+  if (!context) {
+    throw new Error('useWedding must be used within a WeddingProvider');
+  }
+  return context;
+}

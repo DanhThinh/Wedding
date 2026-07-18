@@ -1,58 +1,48 @@
-import { useRef } from 'react';
-import { useWedding } from '../hooks/useWedding';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import LightGallery from 'lightgallery/react';
 import lgZoom from 'lightgallery/plugins/zoom';
 import lgThumbnail from 'lightgallery/plugins/thumbnail';
+import 'lightgallery/css/lightgallery.css';
+import 'lightgallery/css/lg-zoom.css';
+import 'lightgallery/css/lg-thumbnail.css';
+import { useWedding } from '../hooks/weddingContext';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
+import { setImageFallback } from '../lib/imageFallback';
 
 export default function AlbumSection() {
   const { data } = useWedding();
-  const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.1 });
-  const lgRef = useRef<any>(null);
+  const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.05 });
 
   return (
-    <section id="album" ref={ref} className="py-24 section-cream">
+    <section id="album" ref={ref} className="section-white album-section editorial-section">
       <div className="container-custom">
-
-        <div className="text-center mb-12">
+        <header className={`section-heading animate-on-scroll ${isVisible ? 'visible' : ''}`}>
           <span className="section-eyebrow">Our Memories</span>
           <h2 className="section-title">Album Hình Cưới</h2>
-        </div>
+          <p className="section-subtitle">Những khoảnh khắc chúng mình muốn lưu giữ mãi</p>
+        </header>
 
         <LightGallery
-          onInit={d => { lgRef.current = d.instance; }}
-          speed={500}
+          speed={450}
           plugins={[lgZoom, lgThumbnail]}
-          elementClassNames="gallery-grid"
-          selector=".gallery-item"
+          elementClassNames="album-editorial-grid"
+          selector=".album-editorial-item"
         >
-          {data.album.map((image, index) => (
+          {data.album.map((src, index) => (
             <a
-              key={index}
-              href={image}
-              data-src={image}
-              className={`gallery-item animate-on-scroll ${isVisible ? 'visible' : ''}`}
-              style={{ transitionDelay: `${0.07 * (index % 4)}s` }}
-              aria-label={`Ảnh cưới ${index + 1}`}
+              key={src}
+              href={src}
+              className={`album-editorial-item album-item-${index + 1} animate-on-scroll ${isVisible ? 'visible' : ''}`}
+              style={{ transitionDelay: `${0.04 * index}s` }}
+              aria-label={`Mở ảnh cưới ${index + 1}`}
             >
               <img
-                src={image}
-                alt={`Wedding photo ${index + 1}`}
+                src={src}
+                alt={`Khoảnh khắc cưới ${index + 1}`}
                 loading="lazy"
                 decoding="async"
-                width={400}
-                height={400}
-                onError={e => {
-                  (e.target as HTMLImageElement).src = `https://placehold.co/400x400/F5EBE9/D4887A?text=Photo+${index + 1}`;
-                }}
+                onError={event => setImageFallback(event.currentTarget)}
               />
-              {/* Zoom icon */}
-              <div className="gallery-zoom-icon" aria-hidden="true">
-                <svg width="36" height="36" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <circle cx="11" cy="11" r="7" strokeLinecap="round"/>
-                  <path d="M21 21l-4.35-4.35M11 8v6M8 11h6" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
+              <span className="album-open-mark" aria-hidden="true">+</span>
             </a>
           ))}
         </LightGallery>

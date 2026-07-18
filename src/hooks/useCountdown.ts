@@ -5,6 +5,7 @@ interface CountdownValues {
   hours: number;
   minutes: number;
   seconds: number;
+  now: number;
 }
 
 export function useCountdown(targetDate: Date): CountdownValues {
@@ -13,6 +14,7 @@ export function useCountdown(targetDate: Date): CountdownValues {
     hours: 0,
     minutes: 0,
     seconds: 0,
+    now: 0,
   });
 
   useEffect(() => {
@@ -27,9 +29,9 @@ export function useCountdown(targetDate: Date): CountdownValues {
         const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-        setCountdown({ days, hours, minutes, seconds });
+        setCountdown({ days, hours, minutes, seconds, now });
       } else {
-        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, now });
       }
     };
 

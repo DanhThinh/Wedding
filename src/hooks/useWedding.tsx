@@ -1,32 +1,16 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { weddingData } from '../data/weddingData';
+import { useGuestbook } from './useGuestbook';
+import { WeddingContext } from './weddingContext';
+import type { ModalState, ToastState } from './weddingContext';
 
-interface ToastState {
-  show: boolean;
-  message: string;
-  type: 'success' | 'error' | 'info';
+/** Chỉ bật nút nhạc khi đã cấu hình asset thật. */
+const BACKGROUND_MUSIC_SRC = import.meta.env.VITE_BACKGROUND_MUSIC_SRC?.trim() || '';
+
+function getSavedTheme(): 'light' | 'dark' {
+  return 'light';
 }
-
-interface ModalState {
-  guestbook: boolean;
-  rsvp: boolean;
-  giftbox: boolean;
-  calendar: boolean;
-}
-
-interface WeddingContextType {
-  data: typeof weddingData;
-  toast: ToastState;
-  showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
-  modals: ModalState;
-  openModal: (modal: keyof ModalState) => void;
-  closeModal: (modal: keyof ModalState) => void;
-  wishes: Array<{ name: string; message: string; date: string }>;
-  addWish: (name: string, message: string) => void;
-}
-
-const WeddingContext = createContext<WeddingContextType | null>(null);
 
 export function WeddingProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<ToastState>({
@@ -34,6 +18,7 @@ export function WeddingProvider({ children }: { children: ReactNode }) {
     message: '',
     type: 'success',
   });
+  const toastTimerRef = useRef<number | null>(null);
 
   const [modals, setModals] = useState<ModalState>({
     guestbook: false,
@@ -42,21 +27,101 @@ export function WeddingProvider({ children }: { children: ReactNode }) {
     calendar: false,
   });
 
-  const [wishes, setWishes] = useState<Array<{ name: string; message: string; date: string }>>(() => {
-    const saved = localStorage.getItem('wedding-wishes');
-    return saved ? JSON.parse(saved) : [
-      { name: 'Minh Anh', message: 'Chúc hai bạn trăm năm hạnh phúc!', date: new Date().toISOString() },
-      { name: 'Hoàng Dũng', message: 'Chúc mừng hạnh phúc! Sớm có thiên thần nhỏ nhé!', date: new Date().toISOString() },
-    ];
-  });
+  // Guestbook (Firestore realtime hoặc localStorage fallback)
+  const {
+    wishes,
+    addWish: addWishToStore,
+    isRealtime: isRealtimeGuestbook,
+    loading: guestbookLoading,
+  } = useGuestbook();
+
+  // ─── Background Music ────────────────────────────────────────
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('wedding-wishes', JSON.stringify(wishes));
-  }, [wishes]);
+    if (!BACKGROUND_MUSIC_SRC) return;
+    const audio = new Audio(BACKGROUND_MUSIC_SRC);
+    audio.loop = true;
+    audio.volume = 0.35;
+    audio.preload = 'auto';
+    audioRef.current = audio;
+
+    // Sync state when audio ends unexpectedly
+    const handlePause = () => setIsMusicPlaying(false);
+    const handlePlay = () => setIsMusicPlaying(true);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('play', handlePlay);
+
+    return () => {
+      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('play', handlePlay);
+      audio.pause();
+      audio.src = '';
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current !== null) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
+  /** Bật nhạc (cần gọi từ user gesture, ví dụ khi mở thiệp) */
+  const startMusic = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || isMusicPlaying) return;
+    // Fade in từ 0
+    audio.volume = 0;
+    audio.play().then(() => {
+      let vol = 0;
+      const fadeIn = setInterval(() => {
+        vol = Math.min(vol + 0.05, 0.35);
+        audio.volume = vol;
+        if (vol >= 0.35) clearInterval(fadeIn);
+      }, 80);
+    }).catch(() => {
+      // Autoplay bị chặn — cần user gesture tiếp
+    });
+  }, [isMusicPlaying]);
+
+  /** Toggle bật/tắt nhạc */
+  const toggleMusic = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
+  }, []);
+  // ─────────────────────────────────────────────────────────────
+
+  // ─── Theme (Light / Dark) ────────────────────────────────────
+  const [theme, setTheme] = useState<'light' | 'dark'>(getSavedTheme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('wedding-theme', theme);
+    } catch {
+      // Theme vẫn hoạt động trong phiên hiện tại nếu storage bị chặn.
+    }
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+  }, []);
+  // ─────────────────────────────────────────────────────────────
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    if (toastTimerRef.current !== null) {
+      window.clearTimeout(toastTimerRef.current);
+    }
     setToast({ show: true, message, type });
-    setTimeout(() => {
+    toastTimerRef.current = window.setTimeout(() => {
       setToast((prev) => ({ ...prev, show: false }));
     }, 3000);
   };
@@ -71,10 +136,14 @@ export function WeddingProvider({ children }: { children: ReactNode }) {
     document.body.style.overflow = '';
   };
 
-  const addWish = (name: string, message: string) => {
-    const newWish = { name, message, date: new Date().toISOString() };
-    setWishes((prev) => [newWish, ...prev]);
-    showToast('Gửi lời chúc thành công!', 'success');
+  const addWish = async (name: string, message: string) => {
+    const ok = await addWishToStore(name, message);
+    if (ok) {
+      showToast('Gửi lời chúc thành công!', 'success');
+    } else {
+      showToast('Gửi lời chúc thất bại, thử lại nhé!', 'error');
+    }
+    return ok;
   };
 
   return (
@@ -88,17 +157,17 @@ export function WeddingProvider({ children }: { children: ReactNode }) {
         closeModal,
         wishes,
         addWish,
+        isRealtimeGuestbook,
+        guestbookLoading,
+        isMusicPlaying,
+        hasBackgroundMusic: Boolean(BACKGROUND_MUSIC_SRC),
+        toggleMusic,
+        startMusic,
+        theme,
+        toggleTheme,
       }}
     >
       {children}
     </WeddingContext.Provider>
   );
-}
-
-export function useWedding() {
-  const context = useContext(WeddingContext);
-  if (!context) {
-    throw new Error('useWedding must be used within a WeddingProvider');
-  }
-  return context;
 }
