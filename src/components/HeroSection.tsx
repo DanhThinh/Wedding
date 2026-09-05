@@ -4,6 +4,7 @@ import { useWedding } from '../hooks/weddingContext';
 import { gsap } from 'gsap';
 import { getWeddingPhase } from '../lib/weddingState';
 import { trackEvent } from '../lib/analytics';
+import { prefersReducedMotion } from '../lib/reveal';
 
 export default function HeroSection() {
   const { data } = useWedding();
@@ -18,23 +19,34 @@ export default function HeroSection() {
     const outgoing = slidesRef.current[current];
     const incoming = slidesRef.current[next];
 
+    const reduceMotion = prefersReducedMotion();
+
     if (outgoing) {
       gsap.killTweensOf(outgoing);
-      gsap.to(outgoing, { opacity: 0, scale: 1, duration: 1.2, ease: 'power2.inOut' });
+      if (reduceMotion) {
+        gsap.set(outgoing, { opacity: 0, scale: 1 });
+      } else {
+        gsap.to(outgoing, { opacity: 0, scale: 1, duration: 1.2, ease: 'power2.inOut' });
+      }
     }
     if (incoming) {
       gsap.killTweensOf(incoming);
-      gsap.fromTo(
-        incoming,
-        { opacity: 0, scale: 1.02 },
-        { opacity: 1, scale: 1.15, duration: 6, ease: 'none' },
-      );
+      if (reduceMotion) {
+        gsap.set(incoming, { opacity: 1, scale: 1 });
+      } else {
+        gsap.fromTo(
+          incoming,
+          { opacity: 0, scale: 1.02 },
+          { opacity: 1, scale: 1.15, duration: 6, ease: 'none' },
+        );
+      }
     }
     setCurrent(next);
   }, [current]);
 
   // Auto-advance with crossfade
   useEffect(() => {
+    if (total <= 1 || prefersReducedMotion()) return;
     const id = setInterval(() => {
       selectSlide((current + 1) % total);
     }, 5500);
@@ -44,24 +56,51 @@ export default function HeroSection() {
   // Initial Ken Burns on first slide
   useEffect(() => {
     if (slidesRef.current[0]) {
-      gsap.set(slidesRef.current[0], { opacity: 1, scale: 1.02 });
-      gsap.to(slidesRef.current[0], { scale: 1.12, duration: 6, ease: 'none' });
+      const firstSlide = slidesRef.current[0];
+      gsap.set(firstSlide, { opacity: 1, scale: prefersReducedMotion() ? 1 : 1.02 });
+      if (prefersReducedMotion()) return;
+      const tween = gsap.to(firstSlide, { scale: 1.12, duration: 6, ease: 'none' });
+      return () => {
+        tween?.kill();
+      };
     }
   }, []);
 
-  // Entrance animation - staggered with more personality
+  // Màn chào: tên cô dâu chú rể dựng lên từng chữ, phần còn lại theo sau.
   useEffect(() => {
-    if (!contentRef.current) return;
-    const elements = contentRef.current.querySelectorAll('.hero-anim');
-    gsap.fromTo(
-      elements,
-      { opacity: 0, y: 40, filter: 'blur(4px)' },
-      { 
-        opacity: 1, y: 0, filter: 'blur(0px)',
-        duration: 1.2, stagger: 0.2, 
-        ease: 'power3.out', delay: 0.4 
-      }
-    );
+    const root = contentRef.current;
+    if (!root) return;
+
+    const reducedMotion = prefersReducedMotion();
+    if (reducedMotion) {
+      gsap.set(root.querySelectorAll('.hero-anim, .hero-names-part'), {
+        opacity: 1, y: 0, rotateX: 0, filter: 'none',
+      });
+      return;
+    }
+
+    const timeline = gsap.timeline({ delay: 0.35 });
+
+    timeline
+      .fromTo(
+        root.querySelectorAll('.hero-anim'),
+        { opacity: 0, y: 40, filter: 'blur(6px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.2, stagger: 0.16, ease: 'power3.out' },
+      )
+      // Tên lật dựng lên quanh trục ngang — điểm nhấn chính của màn mở đầu.
+      .fromTo(
+        root.querySelectorAll('.hero-names-part'),
+        { opacity: 0, yPercent: 110, rotateX: -55 },
+        {
+          opacity: 1, yPercent: 0, rotateX: 0,
+          duration: 1.4, stagger: 0.13, ease: 'expo.out',
+        },
+        0.5,
+      );
+
+    return () => {
+      timeline.kill();
+    };
   }, []);
 
   return (
@@ -97,10 +136,17 @@ export default function HeroSection() {
           {phase === 'after' ? 'Our Story Continues' : 'Save the Date'}
         </div>
 
-        <h1 className="hero-names hero-anim">
-          <span>{data.groom.shortName}</span>
-          <span className="hero-names-sep">&amp;</span>
-          <span>{data.bride.shortName}</span>
+        {/* Mỗi phần tên nằm trong một "khe" riêng để lật dựng lên từ sau mặt nạ. */}
+        <h1 className="hero-names">
+          <span className="hero-names-slot">
+            <span className="hero-names-part">{data.groom.shortName}</span>
+          </span>
+          <span className="hero-names-slot hero-names-sep">
+            <span className="hero-names-part">&amp;</span>
+          </span>
+          <span className="hero-names-slot">
+            <span className="hero-names-part">{data.bride.shortName}</span>
+          </span>
         </h1>
 
         {/* Thin ornament line */}

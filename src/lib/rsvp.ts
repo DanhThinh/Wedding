@@ -18,7 +18,11 @@ export function normalizePhone(phone: string) {
 
 export function validateRsvp(input: RsvpSubmission): RsvpErrors {
   const errors: RsvpErrors = {};
-  if (!input.name.trim()) errors.name = 'Vui lòng nhập tên';
+  if (!input.name.trim()) {
+    errors.name = 'Vui lòng nhập tên';
+  } else if (input.name.trim().length > 100) {
+    errors.name = 'Tên không được vượt quá 100 ký tự';
+  }
   if (!input.phone) {
     errors.phone = 'Vui lòng nhập số điện thoại';
   } else if (!/^[0-9]{10,11}$/.test(input.phone)) {

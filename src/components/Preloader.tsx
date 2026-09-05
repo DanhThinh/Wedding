@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useWedding } from '../hooks/weddingContext';
 import gsap from 'gsap';
+import { prefersReducedMotion } from '../lib/reveal';
 
 export default function Preloader() {
-  const [hidden, setHidden] = useState(false);
+  const [reduceMotion] = useState(prefersReducedMotion);
+  const [hidden, setHidden] = useState(reduceMotion);
   const { data } = useWedding();
   const containerRef = useRef<HTMLDivElement>(null);
   const heartRef = useRef<HTMLDivElement>(null);
@@ -12,6 +14,8 @@ export default function Preloader() {
   const ringsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (reduceMotion) return;
+
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         onComplete: () => {
@@ -69,7 +73,7 @@ export default function Preloader() {
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [reduceMotion]);
 
   if (hidden) return null;
 

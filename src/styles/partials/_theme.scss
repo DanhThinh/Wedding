@@ -1,4 +1,9 @@
-[data-theme="dark"] {
+/* Viết `:root[data-theme="dark"]` (specificity 0,2,0) thay vì `[data-theme="dark"]`
+   (0,1,0). Lý do: _editorial.scss khai báo lại --primary, --text-mid, --border…
+   trong `:root` (0,1,0) và được nạp SAU file này, nên nếu để specificity ngang
+   nhau thì token light sẽ thắng — dark mode có nền tối nhưng chữ vẫn màu của
+   light, tương phản rất tệ. Cách này đúng bất kể thứ tự nạp file. */
+:root[data-theme="dark"] {
   /* Redefine màu nền/chữ nhưng giữ tông hồng rose-gold lãng mạn */
   --primary:       #E8A598;   /* hồng sáng hơn để nổi trên nền tối */
   --primary-light: rgba(232, 165, 152, 0.16);
@@ -66,6 +71,7 @@ body,
 
 [data-theme="dark"] .form-input,
 [data-theme="dark"] .form-textarea,
+[data-theme="dark"] .form-select,
 [data-theme="dark"] textarea,
 [data-theme="dark"] input[type="text"],
 [data-theme="dark"] input[type="email"],
@@ -73,6 +79,32 @@ body,
   background: #1F1826;
   color: var(--text-dark);
   border-color: var(--border);
+}
+
+/* ─── Bề mặt còn sót lại của dark theme ───
+   Những khối dưới đây hard-code nền trắng nhưng chữ lại dùng var(--text-dark)
+   — trong dark mode --text-dark là #F3E9E6 (gần trắng), nên nếu không override
+   thì thành chữ trắng trên nền trắng, không đọc được. */
+
+/* Lưu ý: trang RSVP (.rsvp-page, .rsvp-card, .rsvp-fieldset, .rsvp-event-option)
+   ĐÃ có rule dark riêng ở cuối _rsvp.scss, với phân tầng màu có chủ đích
+   page → card → fieldset → option. Không lặp lại ở đây. */
+
+/* Modal sổ lưu bút. */
+[data-theme="dark"] .modal-box {
+  background: #261E2E;
+}
+
+/* Cụm nút hành động nhanh (đáy màn hình). */
+[data-theme="dark"] .quick-action-btn {
+  background: #261E2E;
+  border-color: var(--border);
+}
+
+/* Hộp mừng cưới. CỐ Ý không đụng .qr-code-inner — khung trắng ôm mã QR phải
+   giữ nguyên màu trắng thì camera mới quét được mã. */
+[data-theme="dark"] .qr-box {
+  background: #261E2E;
 }
 
 [data-theme="dark"] .suggested-wish,

@@ -14,6 +14,9 @@ export type GuestbookSaveMode = 'firestore' | 'local';
 
 const STORAGE_KEY = 'wedding-wishes';
 const COLLECTION_NAME = 'wishes';
+const MAX_WISHES = 50;
+const MAX_NAME_LENGTH = 80;
+const MAX_MESSAGE_LENGTH = 500;
 
 const DEFAULT_WISHES: Wish[] = [];
 
@@ -33,7 +36,7 @@ function parseSavedWishes(raw: string | null) {
     const parsed = JSON.parse(raw) as unknown;
     if (Array.isArray(parsed)) {
       const validWishes = parsed.filter(isWish);
-      return validWishes.length > 0 ? validWishes : DEFAULT_WISHES;
+      return validWishes.length > 0 ? validWishes.slice(0, MAX_WISHES) : DEFAULT_WISHES;
     }
   } catch (err) {
     console.error('[Guestbook] Dữ liệu localStorage không hợp lệ:', err);
@@ -73,7 +76,7 @@ export function useGuestbook() {
     const newWish: Wish = { name, message, date: new Date().toISOString() };
     try {
       const current = parseSavedWishes(localStorage.getItem(STORAGE_KEY));
-      const updated = [newWish, ...current];
+      const updated = [newWish, ...current].slice(0, MAX_WISHES);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       setWishes(updated);
       return true;
@@ -151,7 +154,12 @@ export function useGuestbook() {
     async (name: string, message: string): Promise<GuestbookSaveMode | false> => {
       const trimmedName = name.trim();
       const trimmedMessage = message.trim();
-      if (!trimmedName || !trimmedMessage) return false;
+      if (
+        !trimmedName
+        || !trimmedMessage
+        || trimmedName.length > MAX_NAME_LENGTH
+        || trimmedMessage.length > MAX_MESSAGE_LENGTH
+      ) return false;
 
       if (modeRef.current !== 'local' && isFirebaseConfigured) {
         try {

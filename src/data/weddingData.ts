@@ -9,6 +9,12 @@ export const weddingData = {
     initial: 'T',
     description: 'Là một chàng trai ấm áp, luôn yêu thương và coi trọng gia đình. Với Thịnh, gia đình không chỉ là điểm tựa mà còn là nơi gửi gắm mọi tình cảm chân thành nhất. Người luôn mang lại cảm giác an toàn và ấm cúng cho những ai ở bên.',
     image: publicAsset('/images/couple/groom-portrait.webp'),
+    // ⚠️ CHƯA ĐIỀN — mục "Hộp Mừng Cưới" bị ẩn cho tới khi có bankName + number.
+    //   number:   '1234567890'
+    //   bankName: 'Vietcombank'
+    //   qrCode:   publicAsset('/images/qr/groom-qr.webp')   ← BẮT BUỘC bọc publicAsset,
+    //             để chuỗi thô '/images/...' không bị hỏng khi deploy dưới subpath.
+    //             Để trống cũng được: khi đó hiện ô gợi ý dùng số tài khoản bên dưới.
     bank: {
       name: 'NGUYEN DANH THINH',
       number: '',
@@ -22,6 +28,7 @@ export const weddingData = {
     initial: 'H',
     description: 'Là người thông minh, luôn vui vẻ và hay cười, mang đến không khí tươi sáng cho những người xung quanh. Cô ấy đôi khi tỏ ra bướng nhưng lại rất quan tâm và chăm sóc những người mình yêu thương, luôn biết cách thể hiện sự quan tâm một cách sâu sắc.',
     image: publicAsset('/images/couple/bride-portrait.webp'),
+    // ⚠️ CHƯA ĐIỀN — xem ghi chú ở phần `groom` phía trên.
     bank: {
       name: 'PHAM THI THUY HANG',
       number: '',
@@ -74,9 +81,9 @@ export const weddingData = {
     },
     {
       id: 3,
-      date: '11/01/2025',
+      date: '11/01/2027',
       title: 'Ngày chung đôi',
-      content: 'Gần 8 năm bên nhau, chúng ta đã cùng nhau vượt qua bao thử thách, chia sẻ những niềm vui, nỗi buồn, và những khoảnh khắc không thể quên. Tình yêu của chúng ta đã trưởng thành, vững vàng như một cây cổ thụ, ngày càng mạnh mẽ và bền chặt hơn qua từng ngày.',
+      content: 'Gần 10 năm bên nhau, chúng ta đã cùng nhau vượt qua bao thử thách, chia sẻ những niềm vui, nỗi buồn, và những khoảnh khắc không thể quên. Tình yêu của chúng ta đã trưởng thành, vững vàng như một cây cổ thụ, ngày càng mạnh mẽ và bền chặt hơn qua từng ngày.',
       image: publicAsset('/images/story/moment-03.webp'),
       label: 'và sau nữa',
     },

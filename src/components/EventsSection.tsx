@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useWedding } from '../hooks/weddingContext';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { createGoogleCalendarUrl, downloadIcs } from '../lib/calendar';
 import { trackEvent } from '../lib/analytics';
+import RevealTitle from './RevealTitle';
 
 const CalendarIcons = {
   google: (
@@ -35,7 +35,6 @@ function hasMappableAddress(address: string) {
 
 export default function EventsSection() {
   const { data } = useWedding();
-  const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.1 });
   const [activePopover, setActivePopover] = useState<number | null>(null);
   const [expandedMap, setExpandedMap] = useState<number | null>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -97,26 +96,26 @@ export default function EventsSection() {
   };
 
   return (
-    <section id="events" ref={ref} className="py-24 section-white events-section">
+    <section id="events" className="py-24 section-white events-section">
       <div className="container-custom">
 
-        <div className={`text-center mb-12 animate-on-scroll ${isVisible ? 'visible' : ''}`}>
-          <span className="section-eyebrow">Wedding Schedule</span>
-          <h2 className="section-title">Sự Kiện Cưới</h2>
-          <p className="section-subtitle">
+        <div className="text-center mb-12">
+          <span className="section-eyebrow" data-reveal="up">Wedding Schedule</span>
+          <RevealTitle text="Sự Kiện Cưới" className="section-title" />
+          <p className="section-subtitle" data-reveal="up">
             Hân hạnh được đón tiếp quý khách
           </p>
         </div>
 
         <div className="events-grid">
-          {data.events.map((event, index) => {
+          {data.events.map((event) => {
             const canShowMap = hasMappableAddress(event.address);
 
             return (
               <div
                 key={event.id}
-                className={`event-card animate-on-scroll ${isVisible ? 'visible' : ''}`}
-                style={{ transitionDelay: `${0.08 * index}s` }}
+                className="event-card"
+                data-reveal="scale"
               >
               <div className="event-icon-wrap">
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" style={{ color: 'var(--primary)' }}>

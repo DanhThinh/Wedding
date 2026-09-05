@@ -56,14 +56,14 @@ Thay các ảnh trong thư mục `public/images/`:
 
 | File | Mô tả |
 |------|-------|
-| `hero-1.webp` đến `hero-5.webp` | Ảnh slideshow hero section |
-| `groom.webp` | Ảnh chú rể |
-| `bride.webp` | Ảnh cô dâu |
-| `story-1.webp` đến `story-3.webp` | Ảnh timeline câu chuyện |
-| `album-1.webp` đến `album-8.webp` | Ảnh album cưới |
-| `qr-groom.png` | QR code chuyển khoản chú rể |
-| `qr-bride.png` | QR code chuyển khoản cô dâu |
-| `favicon.svg` | Icon tab trình duyệt |
+| `images/hero/slide-01.webp` đến `slide-05.webp` | Ảnh slideshow hero section |
+| `images/couple/groom-portrait.webp` | Ảnh chú rể |
+| `images/couple/bride-portrait.webp` | Ảnh cô dâu |
+| `images/story/moment-01.webp` đến `moment-03.webp` | Ảnh timeline câu chuyện |
+| `images/album/photo-01.webp` đến `photo-08.webp` | Ảnh album cưới |
+| `images/qr/groom-qr.webp` | QR code chuyển khoản chú rể |
+| `images/qr/bride-qr.webp` | QR code chuyển khoản cô dâu |
+| `images/system/favicon.svg` | Icon tab trình duyệt |
 
 ## 📝 Thay đổi Nội dung
 
@@ -84,7 +84,7 @@ export const weddingData = {
     initial: 'H',
     // ...
   },
-  weddingDate: new Date('2025-01-11T11:00:00'),
+  weddingDate: new Date('2027-01-11T11:00:00+07:00'),
   events: [...],
   story: [...],
   // ...
@@ -138,6 +138,10 @@ export const weddingData = {
 ## Firebase và kiểm thử
 
 Sao chép `.env.example` thành `.env`, điền cấu hình Firebase rồi deploy `firestore.rules`.
+Với bản GitHub Pages, tạo các Actions Variables cùng tên `VITE_FIREBASE_*`
+(tối thiểu `VITE_FIREBASE_API_KEY` và `VITE_FIREBASE_PROJECT_ID`). Khuyến nghị
+cấu hình thêm `VITE_FIREBASE_APPCHECK_SITE_KEY` và bật App Check enforcement cho
+Cloud Firestore để hạn chế ghi dữ liệu tự động.
 
 ```bash
 npm run test

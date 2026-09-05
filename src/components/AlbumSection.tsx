@@ -5,21 +5,27 @@ import 'lightgallery/css/lightgallery.css';
 import 'lightgallery/css/lg-zoom.css';
 import 'lightgallery/css/lg-thumbnail.css';
 import { useWedding } from '../hooks/weddingContext';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { setImageFallback } from '../lib/imageFallback';
 import { trackEvent } from '../lib/analytics';
+import RevealTitle from './RevealTitle';
 
 export default function AlbumSection() {
   const { data } = useWedding();
-  const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.05 });
 
   return (
-    <section id="album" ref={ref} className="section-white album-section editorial-section">
+    // Nhiều ảnh cùng lọt vào khung nhìn → rút ngắn nhịp stagger cho gọn.
+    <section
+      id="album"
+      className="section-white album-section editorial-section"
+      data-reveal-stagger="0.05"
+    >
       <div className="container-custom">
-        <header className={`section-heading animate-on-scroll ${isVisible ? 'visible' : ''}`}>
-          <span className="section-eyebrow">Our Memories</span>
-          <h2 className="section-title">Album Hình Cưới</h2>
-          <p className="section-subtitle">Những khoảnh khắc chúng mình muốn lưu giữ mãi</p>
+        <header className="section-heading">
+          <span className="section-eyebrow" data-reveal="up">Our Memories</span>
+          <RevealTitle text="Album Hình Cưới" className="section-title" />
+          <p className="section-subtitle" data-reveal="up">
+            Những khoảnh khắc chúng mình muốn lưu giữ mãi
+          </p>
         </header>
 
         <LightGallery
@@ -32,8 +38,8 @@ export default function AlbumSection() {
             <a
               key={src}
               href={src}
-              className={`album-editorial-item album-item-${index + 1} animate-on-scroll ${isVisible ? 'visible' : ''}`}
-              style={{ transitionDelay: `${0.04 * index}s` }}
+              className={`album-editorial-item album-item-${index + 1}`}
+              data-reveal="mask"
               aria-label={`Mở ảnh cưới ${index + 1}`}
               onClick={() => {
                 void trackEvent('gallery_open', {

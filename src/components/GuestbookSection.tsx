@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useWedding } from '../hooks/weddingContext';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { trackEvent } from '../lib/analytics';
+import RevealTitle from './RevealTitle';
 import gsap from 'gsap';
+import { prefersReducedMotion } from '../lib/reveal';
 
 export default function GuestbookSection() {
   const { data, wishes, addWish, showToast, guestbookMode } = useWedding();
-  const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.1 });
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -15,7 +15,7 @@ export default function GuestbookSection() {
 
   // Form shake animation on error
   const shakeForm = () => {
-    if (!formRef.current) return;
+    if (!formRef.current || prefersReducedMotion()) return;
     gsap.fromTo(formRef.current,
       { x: -10 },
       { x: 10, duration: 0.1, repeat: 5, yoyo: true, ease: 'power1.inOut' }
@@ -42,7 +42,7 @@ export default function GuestbookSection() {
     });
     
     // Success animation
-    if (formRef.current) {
+    if (formRef.current && !prefersReducedMotion()) {
       gsap.fromTo(formRef.current,
         { scale: 1 },
         { scale: 0.98, duration: 0.2, yoyo: true, repeat: 1, ease: 'power2.inOut' }
@@ -61,7 +61,7 @@ export default function GuestbookSection() {
 
   // Animate new wishes
   useEffect(() => {
-    if (wishesListRef.current && wishes.length > 0) {
+    if (!prefersReducedMotion() && wishesListRef.current && wishes.length > 0) {
       const firstWish = wishesListRef.current.querySelector('.wish-item:first-child');
       if (firstWish) {
         gsap.fromTo(firstWish,
@@ -73,16 +73,16 @@ export default function GuestbookSection() {
   }, [wishes.length]);
 
   return (
-    <section id="guestbook" ref={ref} className="py-24 section-white guestbook-section">
+    <section id="guestbook" className="py-24 section-white guestbook-section">
       <div className="container-custom">
 
-        <div className={`text-center mb-12 animate-on-scroll ${isVisible ? 'visible' : ''}`}>
-          <span className="section-eyebrow">Leave a Message</span>
-          <h2 className="section-title">Sổ Lưu Bút</h2>
-          <p className="section-subtitle">
+        <div className="text-center mb-12">
+          <span className="section-eyebrow" data-reveal="up">Leave a Message</span>
+          <RevealTitle text="Sổ Lưu Bút" className="section-title" />
+          <p className="section-subtitle" data-reveal="up">
             Gửi những lời chúc tốt đẹp đến chúng mình
           </p>
-          <div className="guestbook-realtime-badge">
+          <div className="guestbook-realtime-badge" data-reveal="up">
             <span className="realtime-dot" />
             {guestbookMode === 'firestore'
               ? `Cập nhật trực tiếp · ${wishes.length} lời chúc`
@@ -95,8 +95,8 @@ export default function GuestbookSection() {
         <div className="grid lg:grid-cols-2 gap-10 max-w-5xl mx-auto">
 
           {/* Form */}
-          <div className={`animate-on-scroll animate-left ${isVisible ? 'visible' : ''}`} style={{ transitionDelay: '0.1s' }}>
-            <div className="guestbook-form-wrap">
+          <div data-reveal="left">
+            <div className="guestbook-form-wrap" data-pointer-fx="glow">
               <div className="guestbook-form-header">
                 <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" style={{ color: 'var(--primary)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
@@ -128,6 +128,7 @@ export default function GuestbookSection() {
                     placeholder="Nhập tên của bạn"
                     required
                     autoComplete="name"
+                    maxLength={80}
                   />
                 </div>
 
@@ -145,6 +146,7 @@ export default function GuestbookSection() {
                     className="form-textarea"
                     placeholder="Nhập lời chúc của bạn..."
                     required
+                    maxLength={500}
                   />
                 </div>
 
@@ -193,7 +195,7 @@ export default function GuestbookSection() {
           </div>
 
           {/* Wishes list */}
-          <div className={`animate-on-scroll animate-right ${isVisible ? 'visible' : ''}`} style={{ transitionDelay: '0.2s' }}>
+          <div data-reveal="right">
             <div ref={wishesListRef} className="wishes-list-container">
               {wishes.length === 0 ? (
                 <div className="wishes-empty-state">

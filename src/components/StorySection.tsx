@@ -1,39 +1,42 @@
 import { useWedding } from '../hooks/weddingContext';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { setImageFallback } from '../lib/imageFallback';
+import RevealTitle from './RevealTitle';
 
 export default function StorySection() {
   const { data } = useWedding();
-  const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.05 });
 
   return (
-    <section id="story" ref={ref} className="section-cream story-section editorial-section">
+    <section id="story" className="section-cream story-section editorial-section">
       <div className="container-custom">
-        <header className={`section-heading animate-on-scroll ${isVisible ? 'visible' : ''}`}>
-          <span className="section-eyebrow">Our Journey</span>
-          <h2 className="section-title">Chuyện Chúng Mình</h2>
-          <p className="section-subtitle">Ba chương nhỏ trong hành trình về chung một nhà</p>
+        <header className="section-heading">
+          <span className="section-eyebrow" data-reveal="up">Our Journey</span>
+          <RevealTitle text="Chuyện Chúng Mình" className="section-title" />
+          <p className="section-subtitle" data-reveal="up">
+            Ba chương nhỏ trong hành trình về chung một nhà
+          </p>
         </header>
 
         <div className="story-editorial-list">
           {data.story.map((item, index) => (
-            <article
-              key={item.id}
-              className={`story-editorial-item animate-on-scroll ${isVisible ? 'visible' : ''}`}
-              style={{ transitionDelay: `${0.08 * index}s` }}
-            >
+            <article key={item.id} className="story-editorial-item">
               <div className="story-editorial-media">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  loading="lazy"
-                  width={720}
-                  height={540}
-                  onError={event => setImageFallback(event.currentTarget)}
-                />
+                {/* Khung riêng để ảnh trôi theo cuộn mà số chương vẫn tràn ra ngoài. */}
+                <div className="story-editorial-frame" data-reveal="mask">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    loading="lazy"
+                    width={720}
+                    height={540}
+                    onError={event => setImageFallback(event.currentTarget)}
+                  />
+                </div>
                 <span className="story-index" aria-hidden="true">0{index + 1}</span>
               </div>
-              <div className="story-editorial-copy">
+              <div
+                className="story-editorial-copy"
+                data-reveal={index % 2 === 0 ? 'right' : 'left'}
+              >
                 <p className="story-date">{item.date}</p>
                 <h3>{item.title}</h3>
                 <p>{item.content}</p>

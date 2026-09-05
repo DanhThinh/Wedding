@@ -1,0 +1,571 @@
+/* ===================================================================
+   MOTION & FINISHING LAYER
+   Lớp cuối cùng: chuyển động có chủ đích, ánh sáng mềm, chi tiết tinh.
+   Nguyên tắc: nâng cảm giác "ấn phẩm cưới cao cấp", không thêm hiệu ứng ồn ào.
+   =================================================================== */
+
+:root {
+  /* Đường cong chuyển động dùng chung — chậm dần rất dài, cảm giác sang. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.30, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --dur-reveal: 1.05s;
+  --dur-hover: 0.55s;
+}
+
+/* ===================================================================
+   1. REVEAL SYSTEM
+   Được điều phối bởi src/lib/reveal.ts — mỗi phần tử tự reveal đúng lúc
+   nó vào khung nhìn, delay stagger tính theo đợt.
+   =================================================================== */
+
+/* Danh sách transition được gói trong biến để phần tử vừa `data-reveal`
+   vừa `data-pointer-fx` có thể nối cả hai, thay vì cái sau xoá cái trước. */
+[data-reveal] {
+  --reveal-delay: 0s;
+  --t-reveal:
+    opacity var(--dur-reveal) var(--ease-out-expo) var(--reveal-delay),
+    translate var(--dur-reveal) var(--ease-out-expo) var(--reveal-delay),
+    scale var(--dur-reveal) var(--ease-out-expo) var(--reveal-delay),
+    filter var(--dur-reveal) var(--ease-out-expo) var(--reveal-delay),
+    clip-path var(--dur-reveal) var(--ease-out-expo) var(--reveal-delay);
+
+  opacity: 0;
+  transition: var(--t-reveal);
+}
+
+[data-reveal].is-revealed {
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+  filter: none;
+}
+
+[data-reveal='up']    { translate: 0 34px; }
+[data-reveal='left']  { translate: -38px 0; }
+[data-reveal='right'] { translate: 38px 0; }
+[data-reveal='scale'] { scale: 0.955; translate: 0 20px; }
+[data-reveal='blur']  { translate: 0 18px; filter: blur(7px); }
+[data-reveal='fade']  { /* chỉ mờ dần — dùng cho chi tiết trang trí */ }
+
+/* Ảnh: mở ra như kéo rèm, kèm nhả zoom nhẹ. Đây là hiệu ứng chủ đạo của album/story. */
+[data-reveal='mask'] {
+  clip-path: inset(0 0 100% 0);
+  transition-duration: 1.25s;
+}
+[data-reveal='mask'].is-revealed {
+  clip-path: inset(0 0 0 0);
+}
+
+/* ===================================================================
+   2. TIÊU ĐỀ TÁCH CHỮ — từng chữ trượt lên từ sau một tấm mặt nạ
+   =================================================================== */
+
+/* Không để [data-reveal] làm mờ cả khối: hiệu ứng nằm ở từng chữ.
+   Ghi rõ cả hai selector để không phụ thuộc thứ tự khai báo trong file. */
+[data-reveal].title-words {
+  opacity: 1;
+}
+
+.title-words .word {
+  display: inline-block;
+  overflow: hidden;
+  /* Chừa chỗ cho phần đuôi chữ nghiêng (g, y, j) khỏi bị mặt nạ cắt. */
+  padding-bottom: 0.16em;
+  margin-bottom: -0.16em;
+  vertical-align: bottom;
+}
+
+.title-words .word > span {
+  display: inline-block;
+  translate: 0 110%;
+  transition: translate 1s var(--ease-out-expo);
+  transition-delay: calc(var(--reveal-delay, 0s) + var(--word-index, 0) * 0.075s);
+}
+
+.title-words.is-revealed .word > span {
+  translate: 0 0;
+}
+
+/* Nét gạch dưới tiêu đề tự kéo dài ra sau khi chữ đã vào chỗ.
+   `display: block` để thắng rule ẩn của .section-heading trong _editorial.scss. */
+.section-title.title-words::after {
+  content: '';
+  display: block;
+  width: 64px;
+  height: 1px;
+  margin: 1.1rem auto 0;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  scale: 0 1;
+  transition: scale 1.1s var(--ease-out-expo) 0.45s;
+}
+
+.section-title.title-words.is-revealed::after {
+  scale: 1 1;
+}
+
+/* Khe chứa tên trong hero: cắt tràn để chữ lật lên từ hư không.
+   Cần perspective ở phần tử cha thì rotateX mới có chiều sâu. */
+.hero-names { perspective: 900px; }
+
+.hero-names-slot {
+  display: inline-block;
+  overflow: hidden;
+  /* Chừa chỗ cho đuôi chữ nghiêng khỏi bị mặt nạ cắt. */
+  padding: 0.08em 0.06em 0.18em;
+  margin: -0.08em -0.06em -0.18em;
+}
+
+.hero-names-part {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  /* Trạng thái đầu; GSAP tiếp quản ngay khi timeline chạy. */
+  opacity: 0;
+  /* Lưới an toàn: tên cô dâu chú rể là nội dung quan trọng nhất trang, không
+     được phép ẩn vĩnh viễn nếu GSAP lỗi hoặc không tải được. Timeline kết thúc
+     quanh giây 2.5 nên mốc 3.5s không bao giờ cắt ngang animation thật. */
+  animation: hero-name-failsafe 0.01s linear 3.5s forwards;
+}
+
+@keyframes hero-name-failsafe {
+  to { opacity: 1; }
+}
+
+/* ===================================================================
+   3. HIỆU ỨNG THEO CUỘN (scroll-driven, không tốn JS)
+   Chỉ bật ở trình duyệt hỗ trợ và khi người dùng không giảm chuyển động.
+   =================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+
+    /* Ảnh trôi ngược chiều cuộn → chiều sâu như tạp chí ảnh.
+       Dùng thuộc tính `translate` riêng để không đụng `scale` của hover. */
+    .couple-editorial-media img,
+    .story-editorial-frame img {
+      animation: media-drift linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+
+    /* Số thứ tự chương truyện trôi chậm hơn ảnh → tách lớp rõ rệt. */
+    .story-index {
+      animation: index-drift linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+
+    /* Hero "đậu lại" và mờ dần khi cuộn xuống nội dung. */
+    .hero-content {
+      animation: hero-park linear both;
+      animation-timeline: scroll();
+      animation-range: 0 85svh;
+    }
+
+    .hero-scroll-hint {
+      animation: hint-fade linear both;
+      animation-timeline: scroll();
+      animation-range: 0 30svh;
+    }
+  }
+}
+
+@keyframes media-drift {
+  from { translate: 0 -2.6%; }
+  to   { translate: 0 2.6%; }
+}
+
+@keyframes index-drift {
+  from { translate: 0 34%; }
+  to   { translate: 0 -34%; }
+}
+
+@keyframes hero-park {
+  to {
+    opacity: 0;
+    translate: 0 -6%;
+    filter: blur(4px);
+  }
+}
+
+@keyframes hint-fade {
+  to { opacity: 0; translate: 0 12px; }
+}
+
+/* Overscan nhẹ để ảnh trôi mà không lộ mép khung. */
+.couple-editorial-media img,
+.story-editorial-frame img {
+  transform: none;
+  scale: 1.075;
+  transition: scale var(--dur-hover) var(--ease-out-quint),
+              filter var(--dur-hover) var(--ease-out-quint);
+}
+
+.couple-editorial-profile:hover .couple-editorial-media img,
+.story-editorial-item:hover .story-editorial-frame img {
+  scale: 1.115;
+}
+
+/* Khung ảnh câu chuyện: cắt tràn để ảnh trôi được, số chương vẫn nằm ngoài. */
+.story-editorial-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--blush);
+}
+
+.story-editorial-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ===================================================================
+   4. ÁNH SÁNG THEO CON TRỎ + NGHIÊNG NHẸ
+   Điều phối bởi src/lib/pointerFx.ts (chỉ chạy trên thiết bị có chuột).
+   =================================================================== */
+
+[data-pointer-fx] {
+  --px: 0.5;
+  --py: 0.5;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  --t-hover:
+    transform var(--dur-hover) var(--ease-out-quint),
+    box-shadow var(--dur-hover) var(--ease-out-quint);
+
+  position: relative;
+  /* Tạo stacking context riêng để lớp sáng `z-index: -1` nằm trên nền thẻ
+     nhưng dưới toàn bộ nội dung — không cần đụng tới các phần tử con. */
+  isolation: isolate;
+  transition: var(--t-hover);
+}
+
+/* Thẻ vừa reveal khi cuộn vừa phản hồi con trỏ → giữ cả hai nhóm transition. */
+[data-reveal][data-pointer-fx] {
+  transition: var(--t-reveal), var(--t-hover);
+}
+
+/* Vệt sáng mềm bám theo con trỏ — chỉ hiện khi hover, tắt hẳn trên mobile. */
+@media (hover: hover) and (pointer: fine) {
+  [data-pointer-fx]::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s var(--ease-soft);
+    background: radial-gradient(
+      320px circle at calc(var(--px) * 100%) calc(var(--py) * 100%),
+      rgba(165, 88, 76, 0.09),
+      transparent 62%
+    );
+  }
+
+  [data-pointer-fx]:hover::before { opacity: 1; }
+
+  [data-pointer-fx]:hover { box-shadow: var(--shadow-lg); }
+
+  /* Nghiêng theo con trỏ chỉ dành cho thẻ KHÔNG chứa menu/popover —
+     nếu không, đích bấm sẽ trôi theo chuột và rất khó chọn. */
+  [data-pointer-fx='tilt']:hover {
+    transform: perspective(1000px)
+      rotateX(var(--tilt-x))
+      rotateY(var(--tilt-y))
+      translateY(-4px);
+  }
+}
+
+/* ===================================================================
+   5. TƯƠNG TÁC NHỎ — nút, liên kết, ảnh
+   =================================================================== */
+
+/* Vệt sáng quét qua nút chính khi hover. */
+.btn-primary::after,
+.nav-rsvp-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  translate: -120% 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.38) 50%,
+    transparent 80%
+  );
+}
+
+.nav-rsvp-btn { position: relative; overflow: hidden; }
+
+.btn-primary:hover::after,
+.nav-rsvp-btn:hover::after {
+  translate: 120% 0;
+  transition: translate 0.85s var(--ease-out-quint);
+}
+
+.btn-primary:active,
+.btn-light:active,
+.nav-rsvp-btn:active {
+  scale: 0.975;
+  transition-duration: 0.1s;
+}
+
+/* Gạch chân tự vẽ cho nav. */
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0.9rem;
+  right: 0.9rem;
+  bottom: 0.45rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.75;
+  scale: 0 1;
+  transform-origin: left center;
+  transition: scale 0.45s var(--ease-out-quint);
+}
+
+.nav-link:hover::after { scale: 1 1; }
+.nav-link.active::after { scale: 0; }
+
+/* Thanh tiến trình đọc: chuyển sắc + phát sáng ở đầu mút. */
+.header-progress-bar {
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--rose-gold), var(--primary) 55%, var(--primary-dark));
+  box-shadow: 0 0 12px rgba(165, 88, 76, 0.5);
+  transition: transform 0.12s linear;
+}
+
+/* Ảnh album: mở khoá bằng sáng + zoom, dấu cộng xoay ra. */
+.album-editorial-item img {
+  transform: none;
+  scale: 1;
+  transition: scale 0.75s var(--ease-out-quint), filter 0.45s var(--ease-soft);
+}
+
+.album-editorial-item:hover img {
+  transform: none;
+  scale: 1.055;
+  filter: brightness(0.9) saturate(1.04);
+}
+
+.album-editorial-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(to top, rgba(34, 28, 26, 0.42), transparent 55%);
+  transition: opacity 0.45s var(--ease-soft);
+}
+
+.album-editorial-item:hover::after { opacity: 1; }
+.album-editorial-item .album-open-mark { z-index: 2; }
+
+/* Ô nhập liệu: viền sáng lên mềm mại thay vì nhảy màu. */
+.form-input,
+.form-textarea,
+.form-select {
+  transition: border-color 0.35s var(--ease-soft),
+              box-shadow 0.35s var(--ease-soft),
+              background-color 0.35s var(--ease-soft);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+/* ===================================================================
+   6. KHÔNG KHÍ — hạt phim mịn và quầng sáng thở
+   =================================================================== */
+
+/* Hạt phim rất mờ phủ toàn trang: khử dải màu ở gradient và cho cảm giác in ấn.
+   Chỉ bật từ tablet trở lên — lớp `mix-blend-mode` phủ kín viewport buộc trình
+   duyệt hợp thành lại cả trang khi cuộn, khá nặng với máy di động tầm trung. */
+@media (min-width: 768px) {
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    opacity: 0.026;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  [data-theme='dark'] body::after {
+    mix-blend-mode: screen;
+    opacity: 0.04;
+  }
+}
+
+/* Quầng sáng ấm thở rất chậm sau khối đếm ngược. */
+.countdown-bg {
+  position: relative;
+  isolation: isolate;
+}
+
+.countdown-bg::before {
+  content: '';
+  position: absolute;
+  inset: -20% -10%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 46% at 22% 28%, rgba(201, 149, 111, 0.16), transparent 68%),
+    radial-gradient(34% 42% at 80% 74%, rgba(212, 136, 122, 0.14), transparent 68%);
+  animation: aura-breathe 16s var(--ease-soft) infinite;
+}
+
+@keyframes aura-breathe {
+  0%, 100% { opacity: 0.65; scale: 1; }
+  50%      { opacity: 1;    scale: 1.07; }
+}
+
+/* Con số đếm ngược có ánh vàng ấm rất nhẹ. */
+.countdown-value {
+  text-shadow: 0 0 26px rgba(201, 149, 111, 0.28);
+}
+
+/* Đường phân cách giữa các section: nét mảnh tự kéo dài ra khi tới. */
+.section-rule {
+  display: block;
+  width: min(120px, 30vw);
+  height: 1px;
+  margin: 0 auto;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  /* Chuyển động `scale` do rule [data-reveal] chung lo, chỉ cần đặt trạng thái đầu. */
+  scale: 0 1;
+}
+
+/* ===================================================================
+   7. TINH CHỈNH THEO SECTION
+   =================================================================== */
+
+/* Dấu ngoặc kép trong lời ngỏ: nhịp thở rất nhẹ. */
+.couple-editorial-note > span {
+  animation: quote-breathe 7s var(--ease-soft) infinite;
+}
+
+@keyframes quote-breathe {
+  0%, 100% { opacity: 0.75; translate: 0 0; }
+  50%      { opacity: 1;    translate: 0 -4px; }
+}
+
+/* Thẻ sự kiện. Cố ý KHÔNG dùng `overflow: hidden` ở đây —
+   popover "Thêm vào lịch" nằm trong thẻ và sẽ bị cắt mất. */
+.event-card {
+  position: relative;
+}
+
+.event-card .event-icon-wrap {
+  transition: scale 0.5s var(--ease-out-quint), rotate 0.5s var(--ease-out-quint);
+}
+
+.event-card:hover .event-icon-wrap {
+  scale: 1.08;
+  rotate: -4deg;
+}
+
+/* Lời chúc mới đã có hiệu ứng vào bằng GSAP trong GuestbookSection —
+   cố ý không thêm CSS animation ở đây vì animation sẽ đè mất
+   `transform` inline của GSAP và cả `:hover` translateX của .wish-item. */
+
+/* Nút gợi ý lời chúc: nảy rất nhẹ. */
+.suggested-wish {
+  transition: scale 0.35s var(--ease-out-quint),
+              background-color 0.35s var(--ease-soft),
+              border-color 0.35s var(--ease-soft);
+}
+.suggested-wish:hover  { scale: 1.04; }
+.suggested-wish:active { scale: 0.97; }
+
+/* Nút nổi (nhạc): quầng sáng nhịp khi đang phát.
+   `position: relative` là bắt buộc — nếu không, vòng sáng sẽ neo vào
+   .floating-controls (position: fixed) và vẽ quanh cả cụm nút. */
+.music-toggle { position: relative; }
+
+.music-toggle.playing::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid var(--primary);
+  opacity: 0;
+  pointer-events: none;
+  animation: ring-pulse 2.4s var(--ease-soft) infinite;
+}
+
+@keyframes ring-pulse {
+  0%   { opacity: 0.55; scale: 1; }
+  70%  { opacity: 0;    scale: 1.35; }
+  100% { opacity: 0;    scale: 1.35; }
+}
+
+/* Ảnh nền trang RSVP: phóng rất chậm để khối hero không bị "chết". */
+@media (prefers-reduced-motion: no-preference) {
+  .rsvp-hero-media img {
+    animation: slow-zoom 22s var(--ease-soft) infinite alternate;
+  }
+}
+
+@keyframes slow-zoom {
+  from { scale: 1.02; }
+  to   { scale: 1.12; }
+}
+
+/* Trái tim trong hero/ornament: nhịp đập chậm và sâu hơn, bớt "nảy". */
+.heart-icon {
+  animation: heart-beat 2.6s var(--ease-soft) infinite;
+}
+
+@keyframes heart-beat {
+  0%, 100%   { scale: 1;    opacity: 0.92; }
+  14%        { scale: 1.13; opacity: 1; }
+  28%        { scale: 1;    opacity: 0.95; }
+  42%        { scale: 1.08; opacity: 1; }
+}
+
+/* ===================================================================
+   8. TÔN TRỌNG "GIẢM CHUYỂN ĐỘNG"
+   Nội dung phải luôn đọc được kể cả khi mọi animation bị tắt.
+   =================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  [data-reveal].is-revealed {
+    opacity: 1 !important;
+    translate: none !important;
+    scale: none !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
+
+  .title-words .word > span { translate: none !important; }
+  .section-title.title-words::after,
+  .section-rule { scale: 1 1 !important; }
+
+  body::after,
+  .countdown-bg::before { display: none; }
+
+  /* Không chờ 3.5s mới hiện tên khi người dùng đã tắt chuyển động. */
+  .hero-names-part { opacity: 1; animation: none; }
+
+  [data-pointer-fx]:hover,
+  [data-pointer-fx='tilt']:hover { transform: none; }
+}

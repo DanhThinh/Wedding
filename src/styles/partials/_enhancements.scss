@@ -1195,9 +1195,14 @@
    =================================================== */
 .floating-controls {
   position: fixed;
-  top: 1.25rem;
-  right: 1.25rem;
-  z-index: 1000;
+  /* Nằm NGAY DƯỚI .site-header (fixed, cao 72px). Nếu để top: 1.25rem thì cụm
+     nút rơi vào giữa dải header, đè lên nút hamburger / nav bên phải. */
+  top: calc(72px + 0.75rem);
+  /* Cùng lề phải với .quick-actions để hai cụm nút thẳng hàng nhau. */
+  right: max(1rem, env(safe-area-inset-right, 1rem));
+  /* Thấp hơn header (z-index 100) để menu mobile khi mở sẽ phủ lên cụm nút,
+     thay vì nút nổi đè lên menu. */
+  z-index: 90;
   display: flex;
   gap: 0.6rem;
 }

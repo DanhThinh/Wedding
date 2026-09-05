@@ -3,6 +3,8 @@ import { useWedding } from '../hooks/weddingContext';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import gsap from 'gsap';
 import { hasGiftDetails } from '../lib/weddingState';
+import RevealTitle from './RevealTitle';
+import { prefersReducedMotion } from '../lib/reveal';
 
 export default function GiftBoxSection() {
   const { data, showToast } = useWedding();
@@ -22,7 +24,7 @@ export default function GiftBoxSection() {
       showToast('Copy thành công!', 'success');
       
       // Success animation
-      if (bankInfoRef.current) {
+      if (bankInfoRef.current && !prefersReducedMotion()) {
         gsap.fromTo(bankInfoRef.current,
           { scale: 1 },
           { scale: 1.05, duration: 0.2, yoyo: true, repeat: 1, ease: 'power2.inOut' }
@@ -36,6 +38,10 @@ export default function GiftBoxSection() {
   // Tab switch animation
   useEffect(() => {
     if (!qrBoxRef.current) return;
+    if (prefersReducedMotion()) {
+      gsap.set([qrCodeRef.current, bankInfoRef.current], { opacity: 1, y: 0 });
+      return;
+    }
     
     const tl = gsap.timeline();
     
@@ -53,22 +59,28 @@ export default function GiftBoxSection() {
       duration: 0.4,
       ease: 'back.out(1.5)',
     });
+    return () => {
+      tl.kill();
+    };
   }, [activeTab]);
 
   // QR code scan line animation
   useEffect(() => {
-    if (!isVisible || !qrCodeRef.current) return;
+    if (!isVisible || !qrCodeRef.current || prefersReducedMotion()) return;
     
     const scanLine = qrCodeRef.current.querySelector('.qr-scan-line');
     if (!scanLine) return;
     
-    gsap.to(scanLine, {
+    const tween = gsap.to(scanLine, {
       y: 164,
       duration: 2,
       repeat: -1,
       ease: 'none',
       repeatDelay: 1,
     });
+    return () => {
+      tween.kill();
+    };
   }, [isVisible, activeTab]);
 
   const person = activeTab === 'groom' ? data.groom : data.bride;
@@ -81,15 +93,15 @@ export default function GiftBoxSection() {
     <section id="giftbox" ref={ref} className="py-24 section-cream giftbox-section">
       <div className="container-custom">
 
-        <div className={`text-center mb-12 animate-on-scroll ${isVisible ? 'visible' : ''}`}>
-          <span className="section-eyebrow">Wedding Gift</span>
-          <h2 className="section-title">Hộp Mừng Cưới</h2>
-          <p className="section-subtitle">
+        <div className="text-center mb-12">
+          <span className="section-eyebrow" data-reveal="up">Wedding Gift</span>
+          <RevealTitle text="Hộp Mừng Cưới" className="section-title" />
+          <p className="section-subtitle" data-reveal="up">
             Sự hiện diện của bạn là niềm vinh hạnh lớn nhất
           </p>
         </div>
 
-        <div className={`max-w-sm mx-auto animate-on-scroll ${isVisible ? 'visible' : ''}`} style={{ transitionDelay: '0.15s' }}>
+        <div className="max-w-sm mx-auto" data-reveal="scale">
           {/* Tab with gradient background */}
           <div className="giftbox-tab-container">
             <div className="giftbox-tab-bg" style={{
@@ -110,7 +122,7 @@ export default function GiftBoxSection() {
           </div>
 
           {/* QR Box with 3D effect */}
-          <div ref={qrBoxRef} className="qr-box">
+          <div ref={qrBoxRef} className="qr-box" data-pointer-fx="tilt">
             {/* Decorative corners */}
             <div className="qr-box-corner tl" />
             <div className="qr-box-corner tr" />

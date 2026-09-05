@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { useWedding } from '../hooks/weddingContext';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { getWeddingPhase, hasGiftDetails } from '../lib/weddingState';
 
 const sections = [
@@ -16,7 +15,6 @@ export default function Footer() {
   const visibleSections = hasGiftDetails(data)
     ? [...sections, { label: 'Mừng cưới', href: '#giftbox' }]
     : sections;
-  const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.1 });
 
   const scroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -24,11 +22,11 @@ export default function Footer() {
   };
 
   return (
-    <footer className="site-footer" ref={ref}>
+    <footer className="site-footer">
       <div className="container-custom">
 
         {/* Main footer content */}
-        <div className={`text-center mb-10 animate-on-scroll ${isVisible ? 'visible' : ''}`}>
+        <div className="text-center mb-10" data-reveal="up">
           {/* Ornament */}
           <div className="ornament" aria-hidden="true">
             <span className="ornament-icon" />
@@ -46,8 +44,8 @@ export default function Footer() {
 
         {/* Nav links */}
         <nav
-          className={`flex flex-wrap justify-center gap-x-5 gap-y-2 mb-8 animate-on-scroll ${isVisible ? 'visible' : ''}`}
-          style={{ transitionDelay: '0.15s' }}
+          className="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-8"
+          data-reveal="up"
           aria-label="Footer navigation"
         >
           {visibleSections.map(s => (
@@ -63,10 +61,10 @@ export default function Footer() {
         </nav>
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'var(--border)', margin: '0 0 1.5rem' }} />
+        <hr className="section-rule" style={{ margin: '0 auto 1.5rem' }} data-reveal="fade" />
 
         {/* Bottom */}
-        <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 animate-on-scroll ${isVisible ? 'visible' : ''}`} style={{ transitionDelay: '0.25s' }}>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3" data-reveal="up">
           <p className="footer-credit">
             Được tạo với{' '}
             <span style={{ color: 'var(--primary)' }}>♥</span>{' '}

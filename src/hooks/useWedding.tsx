@@ -9,7 +9,14 @@ import type { ModalState, ToastState } from './weddingContext';
 const BACKGROUND_MUSIC_SRC = import.meta.env.VITE_BACKGROUND_MUSIC_SRC?.trim() || '';
 
 function getSavedTheme(): 'light' | 'dark' {
-  return 'light';
+  try {
+    const saved = localStorage.getItem('wedding-theme');
+    if (saved === 'light' || saved === 'dark') return saved;
+  } catch {
+    // Storage bị chặn (chế độ riêng tư) — rơi về tuỳ chọn của hệ điều hành.
+  }
+
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 export function WeddingProvider({ children }: { children: ReactNode }) {

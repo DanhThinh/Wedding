@@ -6,11 +6,14 @@ import Preloader from './components/Preloader';
 import EnvelopeDialog from './components/EnvelopeDialog';
 import FallingPetals from './components/FallingPetals';
 import MusicToggle from './components/MusicToggle';
+import ThemeToggle from './components/ThemeToggle';
 import Toast from './components/Toast';
 import DevQAPanel from './components/DevQAPanel';
 import { GuestbookModal } from './components/Modal';
 import HomePage from './pages/HomePage';
 import { trackEvent } from './lib/analytics';
+import { startRevealEngine } from './lib/reveal';
+import { startPointerFx } from './lib/pointerFx';
 import './styles/main.scss';
 
 const RSVPPage = lazy(() => import('./pages/RSVPPage'));
@@ -56,6 +59,16 @@ function AppContent() {
     return () => window.clearTimeout(timer);
   }, [showPetals]);
 
+  // Hai engine chuyển động dùng chung cho toàn trang (reveal khi cuộn + ánh sáng theo con trỏ).
+  useEffect(() => {
+    const stopReveal = startRevealEngine();
+    const stopPointerFx = startPointerFx();
+    return () => {
+      stopReveal();
+      stopPointerFx();
+    };
+  }, []);
+
   return (
     <BrowserRouter basename={routerBasename}>
       <Preloader />
@@ -64,10 +77,12 @@ function AppContent() {
       {/* Cánh hoa rơi — chỉ hiển thị sau khi mở thiệp */}
       {showPetals && <FallingPetals burst count={12} />}
 
-      {/* Cụm nút điều khiển nổi (nhạc + theme) — chỉ hiện sau khi mở thiệp */}
-      {envelopeOpened && hasBackgroundMusic && (
+      {/* Cụm nút điều khiển nổi (nhạc + theme) — chỉ hiện sau khi mở thiệp.
+          Nút nhạc phụ thuộc việc đã cấu hình file nhạc, nút theme thì luôn có. */}
+      {envelopeOpened && (
         <div className="floating-controls">
-          <MusicToggle />
+          {hasBackgroundMusic && <MusicToggle />}
+          <ThemeToggle />
         </div>
       )}
 

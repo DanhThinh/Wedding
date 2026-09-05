@@ -5,6 +5,8 @@ import { useCountdown } from '../hooks/useCountdown';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import ConfettiBurst from './ConfettiBurst';
 import gsap from 'gsap';
+import { getWeddingPhase } from '../lib/weddingState';
+import { prefersReducedMotion } from '../lib/reveal';
 
 function FlipNumber({ value, label }: { value: number; label: string }) {
   const numRef = useRef<HTMLDivElement>(null);
@@ -12,10 +14,14 @@ function FlipNumber({ value, label }: { value: number; label: string }) {
 
   useEffect(() => {
     if (prevValue.current !== value && numRef.current) {
-      gsap.fromTo(numRef.current, 
-        { y: -8, opacity: 0.4, scale: 0.95 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(2)' }
-      );
+      if (prefersReducedMotion()) {
+        gsap.set(numRef.current, { y: 0, opacity: 1, scale: 1 });
+      } else {
+        gsap.fromTo(numRef.current,
+          { y: -8, opacity: 0.4, scale: 0.95 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(2)' }
+        );
+      }
     }
     prevValue.current = value;
   }, [value]);
@@ -36,23 +42,20 @@ export default function CountdownSection() {
   const [ref, isVisible] = useScrollAnimation<HTMLElement>({ threshold: 0.25 });
 
   const now = countdown.now;
-  const weddingDayStart = new Date(data.weddingDate);
-  weddingDayStart.setHours(0, 0, 0, 0);
-  const weddingDayEnd = new Date(weddingDayStart);
-  weddingDayEnd.setDate(weddingDayEnd.getDate() + 1);
+  const phase = getWeddingPhase(data.weddingDate, new Date(now));
 
   // Phân biệt đúng "đã qua" và "hôm nay" để tránh copy sai sau ngày cưới.
   const isExpired = countdown.days === 0 && countdown.hours === 0
     && countdown.minutes === 0 && countdown.seconds === 0;
-  const isWeddingDay = now >= weddingDayStart.getTime() && now < weddingDayEnd.getTime();
-  const isPastWeddingDay = now >= weddingDayEnd.getTime();
+  const isWeddingDay = phase === 'wedding-day';
+  const isPastWeddingDay = phase === 'after';
 
   // Confetti chỉ bùng nổ 1 lần khi section visible VÀ đã hết countdown
   const [showConfetti, setShowConfetti] = useState(false);
   const confettiTriggered = useRef(false);
 
   useEffect(() => {
-    if (isWeddingDay && isVisible && !confettiTriggered.current) {
+    if (isExpired && isWeddingDay && isVisible && !confettiTriggered.current) {
       confettiTriggered.current = true;
       const startTimer = window.setTimeout(() => setShowConfetti(true), 0);
       const stopTimer = window.setTimeout(() => setShowConfetti(false), 3000);
@@ -61,7 +64,7 @@ export default function CountdownSection() {
         window.clearTimeout(stopTimer);
       };
     }
-  }, [isWeddingDay, isVisible]);
+  }, [isExpired, isWeddingDay, isVisible]);
 
   const units = [
     { value: countdown.days,    label: 'Ngày' },
@@ -77,10 +80,7 @@ export default function CountdownSection() {
 
       <div className="container-custom text-center relative z-10">
 
-        <div
-          className={`animate-on-scroll ${isVisible ? 'visible' : ''}`}
-          style={{ transitionDelay: '0s' }}
-        >
+        <div data-reveal="up">
           <p style={{ fontSize: 'var(--fs-xs)', letterSpacing: '0.28em', textTransform: 'uppercase', color: 'rgba(212,136,122,0.8)', marginBottom: '0.75rem' }}>
             The Big Day
           </p>
@@ -96,8 +96,8 @@ export default function CountdownSection() {
         {/* Thông điệp khi countdown đã hết */}
         {isExpired ? (
           <div
-            className={`countdown-celebration animate-on-scroll ${isVisible ? 'visible' : ''}`}
-            style={{ transitionDelay: '0.15s' }}
+            className="countdown-celebration"
+            data-reveal="scale"
           >
             <div className="celebration-heart" aria-hidden="true">
               <svg viewBox="0 0 512 512" width="64" height="64" fill="var(--primary)">
@@ -117,8 +117,8 @@ export default function CountdownSection() {
           <>
             {/* Timer */}
             <div
-              className={`flex justify-center items-end gap-2 md:gap-4 mb-10 animate-on-scroll ${isVisible ? 'visible' : ''}`}
-              style={{ transitionDelay: '0.15s' }}
+              className="flex justify-center items-end gap-2 md:gap-4 mb-10"
+              data-reveal="scale"
             >
               {units.map((u, i) => (
                 <div key={i} className="flex items-end gap-2 md:gap-4">
@@ -132,8 +132,8 @@ export default function CountdownSection() {
 
             {/* Date */}
             <p
-              className={`countdown-date-label mb-8 animate-on-scroll ${isVisible ? 'visible' : ''}`}
-              style={{ transitionDelay: '0.25s' }}
+              className="countdown-date-label mb-8"
+              data-reveal="up"
             >
               {data.weddingDateDisplay}
             </p>
@@ -142,8 +142,8 @@ export default function CountdownSection() {
 
         {/* CTAs */}
         <div
-          className={`flex flex-col sm:flex-row justify-center gap-4 animate-on-scroll ${isVisible ? 'visible' : ''}`}
-          style={{ transitionDelay: '0.35s' }}
+          className="flex flex-col sm:flex-row justify-center gap-4"
+          data-reveal="up"
         >
           <button
             onClick={() => openModal('guestbook')}

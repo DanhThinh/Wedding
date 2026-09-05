@@ -2,7 +2,7 @@
 // Điền thông tin từ Firebase Console: https://console.firebase.google.com
 // Project Settings → General → Your apps → Web app → SDK setup
 //
-// Có thể dùng biến môi trường (.env) để bảo mật:
+// Dùng biến môi trường (.env) để quản lý cấu hình theo từng môi trường:
 //   VITE_FIREBASE_API_KEY=...
 //   VITE_FIREBASE_PROJECT_ID=...
 //   ...
@@ -20,6 +20,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || '',
 };
+const appCheckSiteKey = import.meta.env.VITE_FIREBASE_APPCHECK_SITE_KEY?.trim() || '';
 
 const isTestMode = import.meta.env.MODE === 'test';
 
@@ -52,6 +53,15 @@ export function getFirebaseClient(): Promise<FirebaseClient | null> {
     const app = firebaseApp.getApps().length > 0
       ? firebaseApp.getApp()
       : firebaseApp.initializeApp(firebaseConfig);
+
+    if (appCheckSiteKey && typeof window !== 'undefined') {
+      const appCheck = await import('firebase/app-check');
+      appCheck.initializeAppCheck(app, {
+        provider: new appCheck.ReCaptchaV3Provider(appCheckSiteKey),
+        isTokenAutoRefreshEnabled: true,
+      });
+    }
+
     const analyticsInstance = firebaseConfig.measurementId && await analytics.isSupported()
       ? analytics.getAnalytics(app)
       : undefined;

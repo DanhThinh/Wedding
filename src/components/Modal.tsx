@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import { useWedding } from '../hooks/weddingContext';
 import { trackEvent } from '../lib/analytics';
 
@@ -11,20 +11,57 @@ interface ModalProps {
 
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  const titleId = useId();
 
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const getFocusableElements = () => Array.from(
+      modalRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ) ?? [],
+    );
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusableElements();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        modalRef.current?.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleEsc);
-      // Focus trap
-      modalRef.current?.focus();
-    }
+    document.addEventListener('keydown', handleKeyDown);
+    modalRef.current?.focus();
 
-    return () => document.removeEventListener('keydown', handleEsc);
-  }, [isOpen, onClose]);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previouslyFocused?.isConnected) previouslyFocused.focus();
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -34,17 +71,17 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
     >
       <div
         ref={modalRef}
         className="modal-box"
         tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="font-bellota text-2xl text-primary">{title}</h3>
+          <h3 id={titleId} className="font-bellota text-2xl text-primary">{title}</h3>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -96,24 +133,29 @@ export function GuestbookModal() {
     >
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label className="form-label">Tên của bạn *</label>
+          <label className="form-label" htmlFor="modal-wish-name">Tên của bạn *</label>
           <input
+            id="modal-wish-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="form-input"
             placeholder="Nhập tên của bạn"
+            autoComplete="name"
+            maxLength={80}
             required
           />
         </div>
 
         <div className="form-group">
-          <label className="form-label">Lời chúc *</label>
+          <label className="form-label" htmlFor="modal-wish-message">Lời chúc *</label>
           <textarea
+            id="modal-wish-message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             className="form-textarea"
             placeholder="Nhập lời chúc của bạn..."
+            maxLength={500}
             required
           />
         </div>

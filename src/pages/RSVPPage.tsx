@@ -94,20 +94,20 @@ export default function RSVPPage() {
       </div>
       <div className="rsvp-hero-overlay" aria-hidden="true" />
       <div className="rsvp-hero-content">
-        <Link to="/" className="rsvp-back-link">
+        <Link to="/" className="rsvp-back-link" data-reveal="up">
           <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Về thiệp cưới
         </Link>
-        <p className="rsvp-eyebrow">{phase === 'after' ? 'Wedding Memories' : 'Wedding RSVP'}</p>
-        <h1 className="rsvp-title">{phase === 'after' ? 'Ngày vui đã diễn ra' : 'Xác nhận tham dự'}</h1>
-        <p className="rsvp-couple">
+        <p className="rsvp-eyebrow" data-reveal="up">{phase === 'after' ? 'Wedding Memories' : 'Wedding RSVP'}</p>
+        <h1 className="rsvp-title" data-reveal="up">{phase === 'after' ? 'Ngày vui đã diễn ra' : 'Xác nhận tham dự'}</h1>
+        <p className="rsvp-couple" data-reveal="up">
           {data.groom.shortName}
           <span>&amp;</span>
           {data.bride.shortName}
         </p>
-        <p className="rsvp-date">{data.weddingDateDisplay}</p>
+        <p className="rsvp-date" data-reveal="up">{data.weddingDateDisplay}</p>
       </div>
     </header>
   );
@@ -117,7 +117,7 @@ export default function RSVPPage() {
       <div className="rsvp-page">
         {header}
         <main className="rsvp-main">
-          <section className="rsvp-card rsvp-success-card">
+          <section className="rsvp-card rsvp-success-card" data-reveal="scale">
             <h2>Cảm ơn bạn đã ghé thăm</h2>
             <p>Phần xác nhận tham dự đã khép lại. Mời bạn trở về xem những kỷ niệm và gửi lời chúc đến chúng mình.</p>
             <Link to="/#album" className="btn-primary"><span>Xem album kỷ niệm</span></Link>
@@ -132,7 +132,7 @@ export default function RSVPPage() {
       <div className="rsvp-page">
         {header}
         <main className="rsvp-main">
-          <section className="rsvp-card rsvp-success-card" aria-live="polite">
+          <section className="rsvp-card rsvp-success-card" data-reveal="scale" aria-live="polite">
             <div className="rsvp-success-icon">
               <svg width="34" height="34" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -158,7 +158,7 @@ export default function RSVPPage() {
       {header}
 
       <main className="rsvp-main">
-        <form className="rsvp-card" onSubmit={handleSubmit} noValidate>
+        <form className="rsvp-card" data-reveal="up" data-pointer-fx="glow" onSubmit={handleSubmit} noValidate>
           <div className="rsvp-form-head">
             <p className="section-eyebrow">Guest Confirmation</p>
             <h2>Thông tin tham dự</h2>
@@ -175,9 +175,12 @@ export default function RSVPPage() {
               className={`form-input ${errors.name ? 'input-error' : ''}`}
               placeholder="Ví dụ: Nguyễn Văn An"
               autoComplete="name"
+              maxLength={100}
+              aria-invalid={Boolean(errors.name)}
+              aria-describedby={errors.name ? 'rsvp-name-error' : undefined}
               required
             />
-            {errors.name && <p className="form-error">{errors.name}</p>}
+            {errors.name && <p id="rsvp-name-error" className="form-error">{errors.name}</p>}
           </div>
 
           <div className="form-group">
@@ -191,9 +194,12 @@ export default function RSVPPage() {
               placeholder="Ví dụ: 0912345678"
               autoComplete="tel"
               inputMode="tel"
+              maxLength={18}
+              aria-invalid={Boolean(errors.phone)}
+              aria-describedby={errors.phone ? 'rsvp-phone-error' : undefined}
               required
             />
-            {errors.phone && <p className="form-error">{errors.phone}</p>}
+            {errors.phone && <p id="rsvp-phone-error" className="form-error">{errors.phone}</p>}
           </div>
 
           <fieldset className="rsvp-fieldset">
@@ -213,7 +219,7 @@ export default function RSVPPage() {
                 </label>
               ))}
             </div>
-            {errors.events && <p className="form-error">{errors.events}</p>}
+            {errors.events && <p className="form-error" role="alert">{errors.events}</p>}
           </fieldset>
 
           <div className="form-group">

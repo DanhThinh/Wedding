@@ -15,14 +15,24 @@ vi.mock('../hooks/weddingContext', () => ({
   }),
 }));
 
-vi.mock('gsap', () => ({
-  gsap: {
-    fromTo: vi.fn(),
-    killTweensOf: vi.fn(),
-    set: vi.fn(),
-    to: vi.fn(),
-  },
-}));
+vi.mock('gsap', () => {
+  // Timeline giả: mọi phương thức trả về chính nó để chuỗi `.fromTo().fromTo()` chạy được.
+  const timeline = {
+    fromTo: vi.fn(() => timeline),
+    to: vi.fn(() => timeline),
+    kill: vi.fn(),
+  };
+
+  return {
+    gsap: {
+      fromTo: vi.fn(),
+      killTweensOf: vi.fn(),
+      set: vi.fn(),
+      to: vi.fn(),
+      timeline: vi.fn(() => timeline),
+    },
+  };
+});
 
 describe('HeroSection', () => {
   it('changes the active image when a slide dot is selected', () => {
