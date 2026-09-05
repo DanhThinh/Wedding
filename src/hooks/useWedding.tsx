@@ -6,7 +6,11 @@ import { WeddingContext } from './weddingContext';
 import type { ModalState, ToastState } from './weddingContext';
 
 /** Chỉ bật nút nhạc khi đã cấu hình asset thật. */
-const BACKGROUND_MUSIC_SRC = import.meta.env.VITE_BACKGROUND_MUSIC_SRC?.trim() || '';
+const RAW_BACKGROUND_MUSIC_SRC = import.meta.env.VITE_BACKGROUND_MUSIC_SRC?.trim() || '';
+// Cộng BASE_URL để hoạt động đúng khi deploy dưới subpath (vd: GitHub Pages /Wedding/).
+const BACKGROUND_MUSIC_SRC = RAW_BACKGROUND_MUSIC_SRC
+  ? `${import.meta.env.BASE_URL}${RAW_BACKGROUND_MUSIC_SRC.replace(/^\//, '')}`
+  : '';
 
 function getSavedTheme(): 'light' | 'dark' {
   try {
