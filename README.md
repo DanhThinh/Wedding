@@ -35,6 +35,37 @@ ngày cưới và ảnh từ `weddingData.ts`). Cần sửa tay hai chỗ:
 Ngày âm lịch ở phần *Wedding Ceremony* được tính tự động từ `weddingDate`
 (`src/lib/lunar.ts`), không cần nhập tay.
 
+## 💌 Thiệp mời riêng theo tên khách
+
+Tên khách nằm thẳng trong link, không cần lưu danh sách ở đâu cả:
+
+```
+https://danhthinh.github.io/Wedding/?t=Anh&guest=Nguyễn%20Văn%20Quang
+                                     └ xưng hô ┘  └──── họ tên ────┘
+```
+
+- `guest` (bắt buộc) — thiếu tham số này thì thiệp chạy y như bản dùng chung.
+- `t` (không bắt buộc) — xưng hô: Anh / Chị / Gia đình…
+- Gõ tay: chỉ cần thay mỗi dấu cách bằng `%20`, chữ có dấu để nguyên.
+
+Khi có tên, thiệp sẽ: hiện "Trân trọng kính mời + tên" trên bìa, thêm khối
+"Thân mời" sau Save The Date, và điền sẵn ô họ tên ở phần R.S.V.P lẫn Gửi lời chúc.
+
+### Sinh link hàng loạt
+
+```bash
+cp guests.example.csv guests.csv     # rồi điền danh sách thật vào
+npm run guests                       # in ra bảng + ghi guests-links.csv
+npm run guests -- --base https://tenmien-khac/   # đổi tên miền
+```
+
+CSV có 2 cột `xung_ho,ho_ten` (cột xưng hô để trống cũng được).
+`guests.csv` và `guests-links.csv` đã nằm trong `.gitignore` — đó là danh sách
+khách thật, đừng commit lên repo công khai.
+
+> Lưu ý: khách chuyển tiếp link cho người khác thì người đó sẽ thấy tên sai —
+> hệ quả tất yếu của việc để tên trong URL.
+
 ## 📁 Cấu trúc Project
 
 ```
@@ -44,6 +75,7 @@ src/
 │   │   ├── art.tsx              # Hoa ly, con dấu sáp, máy ảnh, hộp quà… (SVG)
 │   │   ├── InviteCover.tsx      # Bìa thiệp, chạm để tách đôi
 │   │   ├── InviteHero.tsx       # Save The Date
+│   │   ├── InviteGreeting.tsx   # Dòng "Thân mời <tên khách>"
 │   │   ├── InviteStory.tsx      # Our Love Story
 │   │   ├── InviteCouple.tsx     # Và hôm nay — cô dâu / chú rể
 │   │   ├── InviteCeremony.tsx   # Wedding Ceremony + lịch tháng cưới
@@ -76,6 +108,10 @@ src/
 │   ├── useWedding.tsx    # Context provider
 │   ├── useCountdown.ts   # Countdown timer hook
 │   └── useScrollAnimation.ts
+├── lib/
+│   ├── guest.ts          # Đọc / sinh link mời riêng theo tên khách
+│   ├── inviteSession.ts  # Trạng thái phiên: đã mở bìa chưa, đang mời ai
+│   └── lunar.ts          # Đổi ngày dương → âm lịch
 ├── data/
 │   ├── weddingData.ts    # ⭐ Thay đổi nội dung ở đây
 │   └── inviteData.ts     # ⭐ Nội dung riêng của giao diện thiệp

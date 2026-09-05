@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { weddingData } from '../data/weddingData';
+import type { Guest } from '../lib/guest';
 import type { GuestbookMode, GuestbookSaveMode, Wish } from './useGuestbook';
 
 export interface ToastState {
@@ -17,6 +18,8 @@ export interface ModalState {
 
 export interface WeddingContextType {
   data: typeof weddingData;
+  /** Khách mời đọc từ `?guest=` trên URL; `null` khi mở bằng link dùng chung. */
+  guest: Guest | null;
   toast: ToastState;
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   modals: ModalState;

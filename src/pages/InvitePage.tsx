@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import InviteCover from '../components/invite/InviteCover';
 import InviteHero from '../components/invite/InviteHero';
+import InviteGreeting from '../components/invite/InviteGreeting';
 import InviteStory from '../components/invite/InviteStory';
 import InviteCouple from '../components/invite/InviteCouple';
 import InviteCeremony from '../components/invite/InviteCeremony';
@@ -15,31 +16,20 @@ import InviteRsvpSheet from '../components/invite/InviteRsvpSheet';
 import FallingPetals from '../components/FallingPetals';
 import { useWedding } from '../hooks/weddingContext';
 import { trackEvent } from '../lib/analytics';
-
-function readOpenedFlag() {
-  try {
-    return sessionStorage.getItem('envelope-opened') === 'true';
-  } catch {
-    return false;
-  }
-}
+import { getEnvelopeOpened, markEnvelopeOpened } from '../lib/inviteSession';
 
 /**
  * Trang thiệp dựng theo video demo — cuộn một mạch từ bìa tới lời cảm ơn.
  * Thứ tự các khối bám đúng trình tự xuất hiện trong demo.
  */
 export default function InvitePage() {
-  const [opened, setOpened] = useState(readOpenedFlag);
+  const [opened, setOpened] = useState(getEnvelopeOpened);
   const [showPetals, setShowPetals] = useState(false);
   const [rsvpOpen, setRsvpOpen] = useState(false);
   const { hasBackgroundMusic, startMusic } = useWedding();
 
   const handleOpen = () => {
-    try {
-      sessionStorage.setItem('envelope-opened', 'true');
-    } catch {
-      // Chế độ riêng tư chặn storage — mở thiệp vẫn phải chạy được.
-    }
+    markEnvelopeOpened();
     setOpened(true);
     setShowPetals(true);
     void trackEvent('envelope_open', { has_music: hasBackgroundMusic });
@@ -60,6 +50,7 @@ export default function InvitePage() {
 
       <main className="invite__scroll">
         <InviteHero />
+        <InviteGreeting />
         <InviteStory />
         <InviteCouple />
         <InviteCeremony />

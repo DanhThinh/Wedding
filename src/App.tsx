@@ -15,27 +15,12 @@ import InvitePage from './pages/InvitePage';
 import { trackEvent } from './lib/analytics';
 import { startRevealEngine } from './lib/reveal';
 import { startPointerFx } from './lib/pointerFx';
+import { getEnvelopeOpened, markEnvelopeOpened } from './lib/inviteSession';
 import './styles/main.scss';
 
 const RSVPPage = lazy(() => import('./pages/RSVPPage'));
 
 const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
-
-function getEnvelopeOpened() {
-  try {
-    return sessionStorage.getItem('envelope-opened') === 'true';
-  } catch {
-    return false;
-  }
-}
-
-function setEnvelopeOpenedFlag() {
-  try {
-    sessionStorage.setItem('envelope-opened', 'true');
-  } catch {
-    // Storage can be unavailable in restricted browser modes; opening should still work.
-  }
-}
 
 /**
  * Giao diện bản cũ (header + quick actions + phong bì 3D), giữ lại ở `/classic`.
@@ -48,7 +33,7 @@ function ClassicLayout() {
   const { hasBackgroundMusic, startMusic } = useWedding();
 
   const handleEnvelopeOpen = () => {
-    setEnvelopeOpenedFlag();
+    markEnvelopeOpened();
     setEnvelopeOpened(true);
     setShowPetals(true);
     void trackEvent('envelope_open', {

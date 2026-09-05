@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { inviteData } from '../../data/inviteData';
+import { useWedding } from '../../hooks/weddingContext';
 import { FloralBand, WaxSeal } from './art';
 
 interface InviteCoverProps {
@@ -12,6 +13,7 @@ interface InviteCoverProps {
  * Chạm vào bất kỳ đâu → dấu sáp bật ra, bìa tách đôi theo chiều dọc để lộ thiệp.
  */
 export default function InviteCover({ onOpen }: InviteCoverProps) {
+  const { guest } = useWedding();
   const [isHidden, setIsHidden] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const leafLeftRef = useRef<HTMLDivElement>(null);
@@ -88,6 +90,14 @@ export default function InviteCover({ onOpen }: InviteCoverProps) {
           <FloralBand className="invite-cover__flower" />
         </div>
       </div>
+
+      {/* Chỉ hiện khi mở bằng link cá nhân hoá (`?guest=`) */}
+      {guest && (
+        <div className="invite-cover__greeting cover-fade">
+          <p className="invite-cover__greeting-eyebrow">Trân trọng kính mời</p>
+          <p className="invite-cover__greeting-name">{guest.label}</p>
+        </div>
+      )}
 
       <div className="invite-cover__seal" aria-hidden="true">
         <div ref={sealRef} className="invite-cover__seal-inner cover-fade">

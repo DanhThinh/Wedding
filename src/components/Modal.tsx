@@ -99,8 +99,9 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 }
 
 export function GuestbookModal() {
-  const { modals, closeModal, data, addWish, showToast } = useWedding();
-  const [name, setName] = useState('');
+  const { modals, closeModal, data, addWish, showToast, guest } = useWedding();
+  // Mở bằng link cá nhân hoá thì khỏi bắt khách gõ lại tên.
+  const [name, setName] = useState(guest?.name ?? '');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -118,7 +119,7 @@ export function GuestbookModal() {
         mode: saveMode,
         source: 'modal',
       });
-      setName('');
+      setName(guest?.name ?? '');
       setMessage('');
       closeModal('guestbook');
     }

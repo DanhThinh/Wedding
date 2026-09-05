@@ -7,9 +7,10 @@ import { getWeddingPhase } from '../lib/weddingState';
 import { trackEvent } from '../lib/analytics';
 
 export default function RSVPPage() {
-  const { data, showToast } = useWedding();
+  const { data, showToast, guest } = useWedding();
   const [formData, setFormData] = useState({
-    name: '',
+    // Điền sẵn khi mở từ link cá nhân hoá (`?guest=`).
+    name: guest?.name ?? '',
     phone: '',
     eventIds: [] as number[],
     plusOnes: '0',

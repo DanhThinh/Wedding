@@ -17,6 +17,10 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Danh sách khách mời thật + link đã sinh (xem guests.example.csv)
+guests.csv
+guests-links.csv
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

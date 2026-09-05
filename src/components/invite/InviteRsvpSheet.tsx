@@ -16,12 +16,13 @@ interface InviteRsvpSheetProps {
  */
 export default function InviteRsvpSheet({ open, onClose }: InviteRsvpSheetProps) {
   const { rsvp } = inviteData;
-  const { showToast } = useWedding();
+  const { showToast, guest } = useWedding();
   const sheetRef = useRef<HTMLDivElement>(null);
   const fieldId = useId().replace(/:/g, '');
 
   const [attending, setAttending] = useState<boolean | null>(null);
-  const [name, setName] = useState('');
+  // Link cá nhân hoá đã biết tên khách — điền sẵn, khách vẫn sửa được.
+  const [name, setName] = useState(guest?.name ?? '');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,7 +74,7 @@ export default function InviteRsvpSheet({ open, onClose }: InviteRsvpSheetProps)
     );
 
     setAttending(null);
-    setName('');
+    setName(guest?.name ?? '');
     setMessage('');
     onClose();
   };
