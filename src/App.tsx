@@ -11,6 +11,7 @@ import Toast from './components/Toast';
 import DevQAPanel from './components/DevQAPanel';
 import { GuestbookModal } from './components/Modal';
 import HomePage from './pages/HomePage';
+import InvitePage from './pages/InvitePage';
 import { trackEvent } from './lib/analytics';
 import { startRevealEngine } from './lib/reveal';
 import { startPointerFx } from './lib/pointerFx';
@@ -36,7 +37,11 @@ function setEnvelopeOpenedFlag() {
   }
 }
 
-function AppContent() {
+/**
+ * Giao diện bản cũ (header + quick actions + phong bì 3D), giữ lại ở `/classic`.
+ * Trang chủ `/` giờ dùng giao diện thiệp dựng theo video demo.
+ */
+function ClassicLayout() {
   const [envelopeOpened, setEnvelopeOpened] = useState(getEnvelopeOpened);
   const [showPetals, setShowPetals] = useState(false);
 
@@ -59,18 +64,8 @@ function AppContent() {
     return () => window.clearTimeout(timer);
   }, [showPetals]);
 
-  // Hai engine chuyển động dùng chung cho toàn trang (reveal khi cuộn + ánh sáng theo con trỏ).
-  useEffect(() => {
-    const stopReveal = startRevealEngine();
-    const stopPointerFx = startPointerFx();
-    return () => {
-      stopReveal();
-      stopPointerFx();
-    };
-  }, []);
-
   return (
-    <BrowserRouter basename={routerBasename}>
+    <>
       <Preloader />
       {!envelopeOpened && <EnvelopeDialog onOpen={handleEnvelopeOpen} />}
 
@@ -86,8 +81,27 @@ function AppContent() {
         </div>
       )}
 
+      <HomePage />
+    </>
+  );
+}
+
+function AppContent() {
+  // Hai engine chuyển động dùng chung cho toàn trang (reveal khi cuộn + ánh sáng theo con trỏ).
+  useEffect(() => {
+    const stopReveal = startRevealEngine();
+    const stopPointerFx = startPointerFx();
+    return () => {
+      stopReveal();
+      stopPointerFx();
+    };
+  }, []);
+
+  return (
+    <BrowserRouter basename={routerBasename}>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<InvitePage />} />
+        <Route path="/classic" element={<ClassicLayout />} />
         <Route
           path="/rsvp"
           element={(

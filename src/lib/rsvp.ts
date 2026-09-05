@@ -61,3 +61,66 @@ export async function saveRsvp(input: RsvpSubmission): Promise<RsvpSaveMode> {
   saveRsvpLocally(input);
   return 'local';
 }
+
+/* ───────────────────────────────────────────────────────────────
+   Form "Xác Nhận Tham Dự" của giao diện thiệp (bản demo):
+   chỉ hỏi có/không tham dự, họ tên và lời nhắn.
+   Ghi vào collection riêng `attendances` (xem firestore.rules).
+   ─────────────────────────────────────────────────────────────── */
+
+export interface AttendanceSubmission {
+  name: string;
+  attending: boolean;
+  message: string;
+}
+
+const ATTENDANCE_STORAGE_KEY = 'wedding-attendances';
+
+export function validateAttendance(input: AttendanceSubmission) {
+  const errors: Partial<Record<'name', string>> = {};
+  if (!input.name.trim()) {
+    errors.name = 'Vui lòng nhập họ tên';
+  } else if (input.name.trim().length > 100) {
+    errors.name = 'Họ tên không được vượt quá 100 ký tự';
+  }
+  return errors;
+}
+
+function saveAttendanceLocally(input: AttendanceSubmission) {
+  try {
+    const raw = localStorage.getItem(ATTENDANCE_STORAGE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+    const stored = Array.isArray(parsed) ? parsed : [];
+    stored.push({ ...input, submittedAt: new Date().toISOString() });
+    localStorage.setItem(ATTENDANCE_STORAGE_KEY, JSON.stringify(stored));
+  } catch {
+    // Storage bị chặn — vẫn coi như gửi xong để người dùng không bị kẹt.
+  }
+}
+
+export async function saveAttendance(input: AttendanceSubmission): Promise<RsvpSaveMode> {
+  const payload = {
+    name: input.name.trim(),
+    attending: input.attending,
+    message: input.message.trim(),
+  };
+
+  if (isFirebaseConfigured) {
+    try {
+      const client = await getFirebaseClient();
+      if (client) {
+        const { addDoc, collection, serverTimestamp } = await import('firebase/firestore');
+        await addDoc(collection(client.db, 'attendances'), {
+          ...payload,
+          createdAt: serverTimestamp(),
+        });
+        return 'firestore';
+      }
+    } catch (err) {
+      console.error('[RSVP] Không thể gửi xác nhận lên Firestore, chuyển sang lưu cục bộ:', err);
+    }
+  }
+
+  saveAttendanceLocally(payload);
+  return 'local';
+}

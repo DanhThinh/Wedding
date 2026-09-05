@@ -18,11 +18,43 @@ npm run build
 npm run preview
 ```
 
+## 🗺 Các route
+
+| Route | Giao diện |
+|-------|-----------|
+| `/` | **Thiệp bản demo** — dựng lại theo `Demo/Demo.mp4`: bìa thiệp có con dấu sáp → Save The Date → Our Love Story → Và hôm nay → Wedding Ceremony → địa chỉ tổ chức → TimeLine → Photobooth → R.S.V.P → Hộp Quà Mừng → Album Ảnh Cưới |
+| `/classic` | Giao diện cũ (header + phong bì 3D + quick actions) |
+| `/rsvp` | Trang RSVP đầy đủ (tên, SĐT, chọn sự kiện) |
+
+Nội dung của giao diện thiệp nằm ở `src/data/inviteData.ts` (dùng lại tên,
+ngày cưới và ảnh từ `weddingData.ts`). Cần sửa tay hai chỗ:
+
+- `venue.name` / `venue.address` — cũng là chuỗi tra cứu cho bản đồ Google.
+- `timeline.items` — 4 mốc giờ trong ngày cưới.
+
+Ngày âm lịch ở phần *Wedding Ceremony* được tính tự động từ `weddingDate`
+(`src/lib/lunar.ts`), không cần nhập tay.
+
 ## 📁 Cấu trúc Project
 
 ```
 src/
-├── components/          # React components
+├── components/
+│   ├── invite/          # ⭐ Giao diện thiệp bản demo (route `/`)
+│   │   ├── art.tsx              # Hoa ly, con dấu sáp, máy ảnh, hộp quà… (SVG)
+│   │   ├── InviteCover.tsx      # Bìa thiệp, chạm để tách đôi
+│   │   ├── InviteHero.tsx       # Save The Date
+│   │   ├── InviteStory.tsx      # Our Love Story
+│   │   ├── InviteCouple.tsx     # Và hôm nay — cô dâu / chú rể
+│   │   ├── InviteCeremony.tsx   # Wedding Ceremony + lịch tháng cưới
+│   │   ├── InviteVenue.tsx      # Địa chỉ tổ chức + Google Maps
+│   │   ├── InviteTimeline.tsx   # TimeLine 4 mốc giờ
+│   │   ├── InvitePhotobooth.tsx # Máy ảnh cổ + dải polaroid
+│   │   ├── InviteRsvp.tsx       # Khối R.S.V.P
+│   │   ├── InviteRsvpSheet.tsx  # Bảng xác nhận tham dự
+│   │   ├── InviteGift.tsx       # Hộp Quà Mừng
+│   │   ├── InviteAlbum.tsx      # Album Ảnh Cưới + Lời cảm ơn
+│   │   └── InviteDock.tsx       # Nút nhạc, watermark, thanh dock dưới
 │   ├── Header.tsx
 │   ├── HeroSection.tsx
 │   ├── CoupleSection.tsx
@@ -37,16 +69,20 @@ src/
 │   ├── Toast.tsx
 │   └── Modal.tsx
 ├── pages/
-│   ├── HomePage.tsx
+│   ├── InvitePage.tsx    # Route `/` — ghép các khối invite/
+│   ├── HomePage.tsx      # Route `/classic`
 │   └── RSVPPage.tsx
 ├── hooks/
 │   ├── useWedding.tsx    # Context provider
 │   ├── useCountdown.ts   # Countdown timer hook
 │   └── useScrollAnimation.ts
 ├── data/
-│   └── weddingData.ts    # ⭐ Thay đổi nội dung ở đây
+│   ├── weddingData.ts    # ⭐ Thay đổi nội dung ở đây
+│   └── inviteData.ts     # ⭐ Nội dung riêng của giao diện thiệp
 ├── styles/
-│   └── main.scss         # Global styles
+│   ├── main.scss         # Global styles
+│   └── partials/
+│       └── _invite.scss  # Toàn bộ style của giao diện thiệp
 └── App.tsx
 ```
 
