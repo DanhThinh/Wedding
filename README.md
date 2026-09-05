@@ -85,7 +85,7 @@ src/
 │   │   ├── InviteRsvp.tsx       # Khối R.S.V.P
 │   │   ├── InviteRsvpSheet.tsx  # Bảng xác nhận tham dự
 │   │   ├── InviteGift.tsx       # Hộp Quà Mừng
-│   │   ├── InviteAlbum.tsx      # Album Ảnh Cưới + Lời cảm ơn
+│   │   ├── InviteAlbum.tsx      # Album Ảnh Cưới (lightbox) + Lời cảm ơn — nạp trễ
 │   │   └── InviteDock.tsx       # Nút nhạc, watermark, thanh dock dưới
 │   ├── Header.tsx
 │   ├── HeroSection.tsx

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import InviteCover from '../components/invite/InviteCover';
 import InviteHero from '../components/invite/InviteHero';
 import InviteGreeting from '../components/invite/InviteGreeting';
@@ -10,13 +10,16 @@ import InviteTimeline from '../components/invite/InviteTimeline';
 import InvitePhotobooth from '../components/invite/InvitePhotobooth';
 import InviteRsvp from '../components/invite/InviteRsvp';
 import InviteGift from '../components/invite/InviteGift';
-import InviteAlbum from '../components/invite/InviteAlbum';
 import InviteDock from '../components/invite/InviteDock';
 import InviteRsvpSheet from '../components/invite/InviteRsvpSheet';
 import FallingPetals from '../components/FallingPetals';
 import { useWedding } from '../hooks/weddingContext';
 import { trackEvent } from '../lib/analytics';
 import { getEnvelopeOpened, markEnvelopeOpened } from '../lib/inviteSession';
+
+// Album kéo theo LightGallery (~20 kB gzip) mà lại nằm cuối trang — nạp trễ
+// để lần mở thiệp đầu tiên trên 4G nhẹ nhất có thể.
+const InviteAlbum = lazy(() => import('../components/invite/InviteAlbum'));
 
 /**
  * Trang thiệp dựng theo video demo — cuộn một mạch từ bìa tới lời cảm ơn.
@@ -59,7 +62,9 @@ export default function InvitePage() {
         <InvitePhotobooth />
         <InviteRsvp onOpen={() => setRsvpOpen(true)} />
         <InviteGift />
-        <InviteAlbum />
+        <Suspense fallback={<section id="album" className="invite-album is-loading" aria-busy="true" />}>
+          <InviteAlbum />
+        </Suspense>
       </main>
 
       {opened && <InviteDock onOpenRsvp={() => setRsvpOpen(true)} />}
