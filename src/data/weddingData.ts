@@ -1,6 +1,14 @@
 // Wedding Data - Easy to customize
 const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`;
 
+// Vị trí chung của tiệc nhà trai và tiệc cưới, theo ghim Google Maps đã cung cấp.
+// Dùng tọa độ của địa điểm (!3d/!4d), không dùng tọa độ tâm bản đồ sau dấu @.
+const groomVenue = {
+  location: 'Tư gia nhà trai',
+  address: 'Trường THPT Nguyễn Huệ',
+  mapQuery: '19.7655721,105.8081431',
+};
+
 export const weddingData = {
   // Couple Information
   groom: {
@@ -9,17 +17,11 @@ export const weddingData = {
     initial: 'T',
     description: 'Là một chàng trai ấm áp, luôn yêu thương và coi trọng gia đình. Với Thịnh, gia đình không chỉ là điểm tựa mà còn là nơi gửi gắm mọi tình cảm chân thành nhất. Người luôn mang lại cảm giác an toàn và ấm cúng cho những ai ở bên.',
     image: publicAsset('/images/couple/groom-portrait.webp'),
-    // ⚠️ CHƯA ĐIỀN — mục "Hộp Mừng Cưới" bị ẩn cho tới khi có bankName + number.
-    //   number:   '1234567890'
-    //   bankName: 'Vietcombank'
-    //   qrCode:   publicAsset('/images/qr/groom-qr.webp')   ← BẮT BUỘC bọc publicAsset,
-    //             để chuỗi thô '/images/...' không bị hỏng khi deploy dưới subpath.
-    //             Để trống cũng được: khi đó hiện ô gợi ý dùng số tài khoản bên dưới.
     bank: {
       name: 'NGUYEN DANH THINH',
-      number: '',
-      bankName: '',
-      qrCode: '',
+      number: '7727112001',
+      bankName: 'Techcombank',
+      qrCode: publicAsset('/images/qr/groom-qr.jpg'),
     },
   },
   bride: {
@@ -28,7 +30,9 @@ export const weddingData = {
     initial: 'H',
     description: 'Là người thông minh, luôn vui vẻ và hay cười, mang đến không khí tươi sáng cho những người xung quanh. Cô ấy đôi khi tỏ ra bướng nhưng lại rất quan tâm và chăm sóc những người mình yêu thương, luôn biết cách thể hiện sự quan tâm một cách sâu sắc.',
     image: publicAsset('/images/couple/bride-portrait.webp'),
-    // ⚠️ CHƯA ĐIỀN — xem ghi chú ở phần `groom` phía trên.
+    // ⚠️ CHƯA ĐIỀN — mục "Hộp Mừng Cưới" chỉ ẩn thẻ của cô dâu tới khi có
+    //   bankName + number. Điền theo mẫu của `groom` phía trên (nhớ bọc
+    //   qrCode trong publicAsset() để không hỏng khi deploy dưới subpath).
     bank: {
       name: 'PHAM THI THUY HANG',
       number: '',
@@ -41,8 +45,8 @@ export const weddingData = {
   monogram: 'T & H',
 
   // Wedding Date
-  weddingDate: new Date('2027-01-11T11:00:00+07:00'),
-  weddingDateDisplay: '11 tháng 01 năm 2027',
+  weddingDate: new Date('2027-03-03T11:00:00+07:00'),
+  weddingDateDisplay: '03 tháng 03 năm 2027',
 
   // Family Info
   groomFamily: {
@@ -81,7 +85,7 @@ export const weddingData = {
     },
     {
       id: 3,
-      date: '11/01/2027',
+      date: '03/03/2027',
       title: 'Ngày chung đôi',
       content: 'Gần 10 năm bên nhau, chúng ta đã cùng nhau vượt qua bao thử thách, chia sẻ những niềm vui, nỗi buồn, và những khoảnh khắc không thể quên. Tình yêu của chúng ta đã trưởng thành, vững vàng như một cây cổ thụ, ngày càng mạnh mẽ và bền chặt hơn qua từng ngày.',
       image: publicAsset('/images/story/moment-03.webp'),
@@ -94,32 +98,41 @@ export const weddingData = {
     {
       id: 1,
       name: 'Tiệc nhà trai',
-      date: '2027-01-11',
+      date: '2027-03-03',
       time: '11:00',
       timeDisplay: '11:00',
-      location: 'Tư gia nhà trai',
-      address: 'Địa chỉ sẽ cập nhật',
+      ...groomVenue,
       description: 'Tiệc cưới tại nhà trai',
+      timeline: [
+        { id: 1, time: '11:00', label: 'Đón khách' },
+        { id: 2, time: '11:30', label: 'Khai tiệc' },
+      ],
     },
     {
       id: 2,
       name: 'Tiệc nhà gái',
-      date: '2027-01-10',
+      date: '2027-03-02',
       time: '17:00',
       timeDisplay: '17:00',
       location: 'Tư gia nhà gái',
       address: 'Địa chỉ sẽ cập nhật',
+      mapQuery: '',
       description: 'Tiệc cưới tại nhà gái',
+      timeline: [
+        { id: 1, time: '17:00', label: 'Bắt đầu tiệc nhà gái' },
+      ],
     },
     {
       id: 3,
-      name: 'Lễ Thành Hôn',
-      date: '2027-01-11',
+      name: 'Tiệc cưới',
+      date: '2027-03-03',
       time: '18:00',
       timeDisplay: '18:00',
-      location: 'Địa điểm sẽ cập nhật',
-      address: 'Địa chỉ sẽ cập nhật',
+      ...groomVenue,
       description: 'Lễ cưới chính thức',
+      timeline: [
+        { id: 1, time: '18:00', label: 'Bắt đầu tiệc cưới' },
+      ],
     },
   ],
 

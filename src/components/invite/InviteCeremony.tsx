@@ -1,4 +1,3 @@
-import { useId } from 'react';
 import { inviteData } from '../../data/inviteData';
 import { formatLunarLine } from '../../lib/lunar';
 import { getDateParts } from '../../lib/date';
@@ -21,12 +20,11 @@ function buildMonthGrid(date: Date) {
 }
 
 /**
- * "Wedding Ceremony": giờ – ngày – thứ, ngày âm lịch, dòng chữ vòng cung
+ * "Wedding Ceremony": giờ – ngày – thứ, ngày âm lịch, dòng chữ
  * "WELCOME TO OUR WEDDING", ảnh cưới cắt hình vòm và lịch tháng cưới chồng lên đáy ảnh.
  */
 export default function InviteCeremony() {
   const { ceremony, weddingDate } = inviteData;
-  const arcId = useId().replace(/:/g, '');
   const grid = buildMonthGrid(weddingDate);
   const weddingDay = getDateParts(weddingDate).day;
 
@@ -37,18 +35,9 @@ export default function InviteCeremony() {
       <p className="invite-ceremony__lunar" data-reveal="up">({formatLunarLine(weddingDate)})</p>
 
       <div className="invite-ceremony__stage" data-reveal="scale">
-        <svg className="invite-ceremony__arc" viewBox="0 0 400 120" aria-hidden="true">
-          <defs>
-            {/* Cung thoải để chữ không bị dựng đứng ở hai đầu */}
-            <path id={`arc-${arcId}`} d="M16 114 A 260 168 0 0 1 384 114" fill="none" />
-          </defs>
-          <text className="invite-ceremony__arc-text">
-            <textPath href={`#arc-${arcId}`} startOffset="50%" textAnchor="middle">
-              {ceremony.welcome}
-            </textPath>
-          </text>
-        </svg>
-        <span className="sr-only">{ceremony.welcome}</span>
+        {/* Chữ vòng cung theo dáng ảnh vòm khó khớp cong chuẩn với mọi ảnh —
+            để chữ thẳng cho gọn và luôn ngay ngắn. */}
+        <p className="invite-ceremony__welcome">{ceremony.welcome}</p>
 
         <figure className="invite-ceremony__arch">
           <img

@@ -1,31 +1,42 @@
-import { inviteData } from '../../data/inviteData';
-import { TimelineGlyph } from './art';
+import { useId, useState } from 'react';
+import type { WeddingData } from '../../data/weddingData';
 
-/**
- * "TimeLine" — hàng viên thuốc chứa giờ ở trên, đường kẻ ngang nối các vòng tròn
- * icon, chú thích việc + địa điểm ở dưới. Cuộn ngang được trên máy hẹp.
- */
-export default function InviteTimeline() {
-  const { timeline } = inviteData;
+type TimelineEvent = Pick<WeddingData['events'][number], 'name' | 'date' | 'timeline'>;
+
+/** Mỗi thẻ tự quản lý trạng thái xổ xuống và lịch trình riêng của mình. */
+export default function InviteTimeline({ event }: { event: TimelineEvent }) {
+  const [expanded, setExpanded] = useState(false);
+  const contentId = useId();
 
   return (
-    <section className="invite-timeline" id="timeline">
-      <h2 className="script-title" data-reveal="up">{timeline.title}</h2>
-
-      <div className="invite-timeline__scroller">
-        <ol className="invite-timeline__track" data-reveal-stagger="0.1">
-          {timeline.items.map(item => (
-            <li key={item.id} className="invite-timeline__item" data-reveal="up">
-              <span className="invite-timeline__time">{item.time}</span>
-              <span className="invite-timeline__dot">
-                <TimelineGlyph name={item.icon} className="invite-timeline__glyph" />
-              </span>
-              <span className="invite-timeline__label">{item.label}</span>
-              <span className="invite-timeline__place">{item.place}</span>
-            </li>
-          ))}
-        </ol>
+    <div className="invite-timeline">
+      <button
+        type="button"
+        className="invite-timeline__toggle"
+        aria-expanded={expanded}
+        aria-controls={contentId}
+        aria-label={`${expanded ? 'Thu gọn' : 'Xem'} lịch trình ${event.name}`}
+        onClick={() => setExpanded(value => !value)}
+      >
+        <span>{expanded ? 'Thu gọn lịch trình' : 'Xem lịch trình'}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+          <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      <div id={contentId} hidden={!expanded}>
+        {expanded && (event.timeline.length > 0 ? (
+          <ol className="invite-timeline__track" aria-label={`Lịch trình ${event.name}`}>
+            {event.timeline.map(item => (
+              <li key={item.id} className="invite-timeline__item">
+                <time className="invite-timeline__time" dateTime={`${event.date}T${item.time}:00+07:00`}>
+                  {item.time}
+                </time>
+                <span className="invite-timeline__label">{item.label}</span>
+              </li>
+            ))}
+          </ol>
+        ) : <p className="invite-timeline__empty">Lịch trình sẽ cập nhật</p>)}
       </div>
-    </section>
+    </div>
   );
 }

@@ -22,18 +22,30 @@ npm run preview
 
 | Route | Giao diện |
 |-------|-----------|
-| `/` | **Thiệp bản demo** — dựng lại theo `Demo/Demo.mp4`: bìa thiệp có con dấu sáp → Save The Date → Our Love Story → Và hôm nay → Wedding Ceremony → địa chỉ tổ chức → TimeLine → Photobooth → R.S.V.P → Hộp Quà Mừng → Album Ảnh Cưới |
+| `/` | **Thiệp bản demo** — dựng lại theo `Demo/Demo.mp4`: bìa thiệp có con dấu sáp → Save The Date → Our Love Story → Và hôm nay → Wedding Ceremony → địa chỉ tổ chức và lịch trình từng tiệc → Photobooth → R.S.V.P → Hộp Quà Mừng → Album Ảnh Cưới |
 | `/classic` | Giao diện cũ (header + phong bì 3D + quick actions) |
 | `/rsvp` | Trang RSVP đầy đủ (tên, SĐT, chọn sự kiện) |
 
 Nội dung của giao diện thiệp nằm ở `src/data/inviteData.ts` (dùng lại tên,
-ngày cưới và ảnh từ `weddingData.ts`). Cần sửa tay hai chỗ:
+ngày cưới và ảnh từ `weddingData.ts`). Cập nhật nội dung tại:
 
-- `venue.name` / `venue.address` — cũng là chuỗi tra cứu cho bản đồ Google.
-- `timeline.items` — 4 mốc giờ trong ngày cưới.
+- `weddingData.events` trong `src/data/weddingData.ts` — ba tiệc nhà trai,
+  nhà gái và tiệc cưới, theo đúng thứ tự hiển thị. Điền `location` (tên địa điểm),
+  `address` (địa chỉ đầy đủ), `date`, `time` và `timeDisplay`. Giữ ID 1/2/3 để
+  khớp dữ liệu RSVP. Trang chủ, giao diện classic và RSVP dùng chung danh sách này.
+  `mapQuery` dùng để ghim tọa độ chính xác khi có link Google Maps; để trống sẽ
+  tra cứu theo `address`. Nhà trai và tiệc cưới dùng chung `groomVenue` ở đầu file.
+- `weddingData.events[].timeline` — lịch trình riêng cho từng tiệc, gồm `id`,
+  `time` (HH:mm, giờ Việt Nam) và `label`. Mỗi thẻ có nút xổ xuống “Xem lịch trình”,
+  mặc định thu gọn và mở độc lập, kể cả khi chưa có địa chỉ. Ngày của các mốc
+  lấy từ `date` của tiệc. Để danh sách trống nếu chưa chốt lịch trình.
+  Hiện tiệc nhà trai giữ mốc 11:00 đón khách / 11:30 khai tiệc từ lịch cũ;
+  nhà gái và tiệc cưới dùng giờ bắt đầu hiện có, có thể bổ sung mốc chi tiết.
 
-Bản đồ và liên kết chỉ đường chỉ xuất hiện khi đã có địa chỉ thật; địa chỉ trống
-hoặc còn ghi “cập nhật” sẽ hiện thông báo chờ cập nhật. Ngày, giờ và lịch tháng
+Mỗi thẻ chỉ có nút “Chỉ đường” để mở Google Maps đến địa chỉ của tiệc đó,
+không nhúng bản đồ trong thiệp. Nút chỉ xuất hiện khi
+đã có địa chỉ thật; địa chỉ trống hoặc còn ghi “cập nhật” sẽ hiện thông báo chờ
+cập nhật. Ngày, giờ và lịch tháng
 trên thiệp luôn theo giờ Việt Nam (UTC+7), kể cả khi khách mở ở nước ngoài.
 
 Ngày âm lịch ở phần *Wedding Ceremony* được tính tự động từ `weddingDate`
@@ -89,10 +101,11 @@ src/
 │   │   ├── InviteCouple.tsx     # Và hôm nay — cô dâu / chú rể
 │   │   ├── InviteCeremony.tsx   # Wedding Ceremony + lịch tháng cưới
 │   │   ├── InviteVenue.tsx      # Địa chỉ tổ chức + Google Maps
-│   │   ├── InviteTimeline.tsx   # TimeLine 4 mốc giờ
+│   │   ├── InviteTimeline.tsx   # Lịch trình xổ xuống trong từng thẻ địa điểm
 │   │   ├── InvitePhotobooth.tsx # Máy ảnh cổ + dải polaroid
 │   │   ├── InviteRsvp.tsx       # Khối R.S.V.P
 │   │   ├── InviteRsvpSheet.tsx  # Bảng xác nhận tham dự
+│   │   ├── InviteGuestbook.tsx  # Sổ lưu bút: danh sách lời chúc + nút gửi
 │   │   ├── InviteGift.tsx       # Hộp Quà Mừng
 │   │   ├── InviteAlbum.tsx      # Album Ảnh Cưới (lightbox) + Lời cảm ơn — nạp trễ
 │   │   └── InviteDock.tsx       # Nút nhạc, watermark, thanh dock dưới

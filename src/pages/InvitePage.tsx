@@ -2,13 +2,14 @@ import { Suspense, lazy, useEffect, useState } from 'react';
 import InviteCover from '../components/invite/InviteCover';
 import InviteHero from '../components/invite/InviteHero';
 import InviteGreeting from '../components/invite/InviteGreeting';
+import InviteCountdown from '../components/invite/InviteCountdown';
 import InviteStory from '../components/invite/InviteStory';
 import InviteCouple from '../components/invite/InviteCouple';
 import InviteCeremony from '../components/invite/InviteCeremony';
 import InviteVenue from '../components/invite/InviteVenue';
-import InviteTimeline from '../components/invite/InviteTimeline';
 import InvitePhotobooth from '../components/invite/InvitePhotobooth';
 import InviteRsvp from '../components/invite/InviteRsvp';
+import InviteGuestbook from '../components/invite/InviteGuestbook';
 import InviteGift from '../components/invite/InviteGift';
 import InviteDock from '../components/invite/InviteDock';
 import InviteRsvpSheet from '../components/invite/InviteRsvpSheet';
@@ -54,13 +55,14 @@ export default function InvitePage() {
       <main className="invite__scroll">
         <InviteHero />
         <InviteGreeting />
+        <InviteCountdown />
         <InviteStory />
         <InviteCouple />
         <InviteCeremony />
         <InviteVenue />
-        <InviteTimeline />
         <InvitePhotobooth />
         <InviteRsvp onOpen={() => setRsvpOpen(true)} />
+        <InviteGuestbook />
         <InviteGift />
         <Suspense fallback={<section id="album" className="invite-album is-loading" aria-busy="true" />}>
           <InviteAlbum />

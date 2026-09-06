@@ -408,6 +408,16 @@ export function ChairGlyph({ crossed = false, className }: { crossed?: boolean; 
   );
 }
 
+/** Bong bóng chat — dùng cho mọi lối vào "gửi lời chúc" để khách nhận ra
+ * đó là cùng một hành động dù xuất hiện ở dock nổi hay trong nội dung trang. */
+export function ChatGlyph({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.6 9.6 0 0 1-2.9-.4L3 21l1.6-4.6A8.2 8.2 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z" />
+    </svg>
+  );
+}
+
 /* ─────────────────────────────────────────────────────────────
    CHỮ KÝ + TIM VẼ TAY
    ───────────────────────────────────────────────────────────── */

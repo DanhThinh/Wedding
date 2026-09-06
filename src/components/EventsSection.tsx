@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useWedding } from '../hooks/weddingContext';
 import { createGoogleCalendarUrl, downloadIcs } from '../lib/calendar';
 import { trackEvent } from '../lib/analytics';
-import { hasMappableAddress } from '../lib/venue';
+import { getVenueMapQuery, hasMappableAddress } from '../lib/venue';
 import RevealTitle from './RevealTitle';
 
 const CalendarIcons = {
@@ -46,14 +46,6 @@ export default function EventsSection() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Google Maps embed URL
-  // CÁCH 1: Dùng Embed API (cần API key, đẹp hơn, custom được)
-  // Lấy key tại: https://console.cloud.google.com/google/maps-apis/
-  // const getMapEmbedUrl = (address: string) => {
-  //   return `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodeURIComponent(address)}&zoom=15`;
-  // };
-  
-  // CÁCH 2: Dùng iframe search (không cần API key, hoạt động ngay)
   const getMapEmbedUrl = (address: string) => {
     return `https://maps.google.com/maps?q=${encodeURIComponent(address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
   };
@@ -107,6 +99,7 @@ export default function EventsSection() {
         <div className="events-grid">
           {data.events.map((event) => {
             const canShowMap = hasMappableAddress(event.address);
+            const mapQuery = getVenueMapQuery(event);
 
             return (
               <div
@@ -143,7 +136,7 @@ export default function EventsSection() {
 
                     {/* Chỉ đường */}
                     <a
-                      href={getDirectionsUrl(event.address)}
+                      href={getDirectionsUrl(mapQuery)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="event-map-btn"
@@ -226,11 +219,11 @@ export default function EventsSection() {
                     loading="lazy"
                     allowFullScreen
                     referrerPolicy="no-referrer"
-                    src={getMapEmbedUrl(event.address)}
+                    src={getMapEmbedUrl(mapQuery)}
                   />
                   <div className="event-map-footer">
                     <a
-                      href={mapsUrl(event.address)}
+                      href={mapsUrl(mapQuery)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="event-map-link"

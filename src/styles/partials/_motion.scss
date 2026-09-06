@@ -49,12 +49,19 @@
 [data-reveal='blur']  { translate: 0 18px; filter: blur(7px); }
 [data-reveal='fade']  { /* chỉ mờ dần — dùng cho chi tiết trang trí */ }
 
-/* Ảnh: mở ra như kéo rèm, kèm nhả zoom nhẹ. Đây là hiệu ứng chủ đạo của album/story. */
-[data-reveal='mask'] {
+/* Ảnh: mở ra như kéo rèm, kèm nhả zoom nhẹ. Đây là hiệu ứng chủ đạo của album/story.
+   QUAN TRỌNG: clip-path phải nằm trên <img> con, KHÔNG đặt trực tiếp trên chính
+   phần tử `[data-reveal='mask']` — Chromium coi phần tử bị clip-path che kín
+   (inset 100%) là "không có gì để vẽ", nên IntersectionObserver quan sát đúng
+   phần tử đó sẽ chỉ báo một lần duy nhất (không giao nhau) rồi im re, kể cả
+   khi cuộn nó vào giữa khung nhìn — ảnh kẹt ẩn vĩnh viễn. Tách ra: phần tử có
+   data-reveal (để engine gắn is-revealed) giữ hình dạng bình thường cho
+   observer theo dõi được, còn hiệu ứng "kéo rèm" áp cho <img> bên trong. */
+[data-reveal='mask'] > img {
   clip-path: inset(0 0 100% 0);
   transition-duration: 1.25s;
 }
-[data-reveal='mask'].is-revealed {
+[data-reveal='mask'].is-revealed > img {
   clip-path: inset(0 0 0 0);
 }
 

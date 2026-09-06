@@ -45,20 +45,10 @@
 }
 
 /* ===================================================
-   COUNTDOWN PARTICLES
-   =================================================== */
-.countdown-particles {
-  display: none;
-}
-.countdown-particle {
-  display: none;
-}
-
-/* ===================================================
    FOOTER ENHANCEMENTS
    =================================================== */
 .footer-rsvp-btn {
-  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  transition: all 0.3s var(--ease-soft);
 }
 .footer-rsvp-btn:hover {
   transform: translateY(-2px);
@@ -70,7 +60,7 @@
    GALLERY 3D TILT EFFECT
    =================================================== */
 .gallery-item {
-  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s;
+  transition: transform 0.4s var(--ease-soft), box-shadow 0.4s;
 }
 .gallery-item:hover {
   transform: scale(1.015);
@@ -99,33 +89,6 @@
 }
 .section-cream + .section-white::before {
   background: linear-gradient(to bottom, var(--cream), transparent);
-}
-
-/* ===================================================
-   COUPLE CARD SHIMMER ON HOVER
-   =================================================== */
-.couple-card::after {
-  display: none;
-}
-.couple-card:hover::after {
-  display: none;
-}
-
-/* ===================================================
-   EVENT CARD GLOW
-   =================================================== */
-.event-card::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(212,136,122,0.3), transparent, rgba(201,149,111,0.2));
-  opacity: 0;
-  transition: opacity 0.4s;
-  z-index: -1;
-}
-.event-card:hover::after {
-  opacity: 1;
 }
 
 /* ===================================================
@@ -527,56 +490,6 @@
   transform-style: preserve-3d;
 }
 
-.event-card-border {
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    var(--primary),
-    var(--rose-gold),
-    var(--primary)
-  );
-  background-size: 200% 200%;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  z-index: -1;
-  animation: gradientShift 3s ease infinite;
-}
-
-@keyframes gradientShift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-.event-card:hover .event-card-border {
-  opacity: 1;
-}
-
-.event-icon-pulse {
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  background: var(--primary);
-  opacity: 0.2;
-  animation: iconPulse 2s ease-in-out infinite;
-}
-
-@keyframes iconPulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.2;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0;
-  }
-}
-
 /* ===================================================
    GUESTBOOK ENHANCEMENTS
    =================================================== */
@@ -608,7 +521,11 @@
 /* ===================================================
    RESPONSIVE ENHANCEMENTS
    =================================================== */
-@media (max-width: 768px) {
+/* 767px, không phải 768px: khớp với ranh giới mobile/desktop dùng xuyên suốt
+   dự án (xem _editorial.scss, _sections.scss `max-width:767` ↔ _motion.scss,
+   _rsvp.scss `min-width:768`) — tránh cả hai cùng áp dụng ở khổ 768px (iPad
+   dọc), vốn từng khiến style mobile và desktop chồng lên nhau. */
+@media (max-width: 767px) {
   .couple-hearts {
     top: 12px;
     right: 12px;
@@ -1074,24 +991,14 @@
   flex-shrink: 0;
 }
 
+/* Vòng tĩnh quanh logo — bản editorial bỏ hiệu ứng nhấp nháy (xem trước đây
+   là `animation: logoRingPulse`) để bớt xao nhãng, chỉ giữ viền trang trí. */
 .header-logo-ring {
   position: absolute;
   inset: -4px;
   border: 1px solid var(--primary);
   border-radius: 50%;
   opacity: 0.4;
-  animation: logoRingPulse 2.5s ease-in-out infinite;
-}
-
-@keyframes logoRingPulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.4;
-  }
-  50% {
-    transform: scale(1.15);
-    opacity: 0;
-  }
 }
 
 .header-amp {
@@ -1361,7 +1268,7 @@
   border-radius: var(--r-md);
   cursor: pointer;
   will-change: transform;
-  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s;
+  transition: transform 0.4s var(--ease-soft), box-shadow 0.4s;
   display: block;
 
   /* Ảnh chiếm toàn bộ */
@@ -1402,8 +1309,9 @@
   transform: translateY(0);
 }
 
-/* Responsive badge */
-@media (max-width: 640px) {
+/* Responsive badge — 639px để không trùng với `min-width:640` của
+   .gallery-masonry-grid phía trên (tránh cả hai cùng áp dụng ở đúng 640px). */
+@media (max-width: 639px) {
   .gallery-badge {
     font-size: 0.65rem;
     padding: 0.3rem 0.6rem;

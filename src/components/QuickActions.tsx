@@ -1,9 +1,11 @@
+import { Link } from 'react-router-dom';
 import { useWedding } from '../hooks/weddingContext';
-import { hasGiftDetails } from '../lib/weddingState';
+import { getWeddingPhase, hasGiftDetails } from '../lib/weddingState';
 
 export default function QuickActions() {
   const { data, openModal } = useWedding();
   const showGift = hasGiftDetails(data);
+  const showRsvp = getWeddingPhase(data.weddingDate) !== 'after';
 
   return (
     <nav className="quick-actions lg:hidden" aria-label="Quick actions">
@@ -28,6 +30,16 @@ export default function QuickActions() {
         </svg>
         <span className="sr-only">Mừng cưới</span>
       </button>
+      }
+
+      {/* Header đã có nút "Xác nhận" nổi bật trên desktop nav, nhưng thanh quick-actions
+          trên mobile lại thiếu hẳn lối vào RSVP — bổ sung để đối xứng với desktop. */}
+      {showRsvp && <Link className="quick-action-btn" to="/rsvp" aria-label="Xác nhận tham dự">
+        <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span className="sr-only">Xác nhận</span>
+      </Link>
       }
     </nav>
   );

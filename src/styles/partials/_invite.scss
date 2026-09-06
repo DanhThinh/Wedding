@@ -209,15 +209,16 @@
   text-align: center;
 }
 
-/* Chữ "Save The Date" nằm đè lên mép trên tấm ảnh, đúng như demo */
+/* Chữ "Save The Date" nằm hẳn phía trên ảnh, có khoảng cách rõ ràng —
+   không lấn/đè vào khung ảnh bên dưới (trước đây dùng margin-bottom âm để
+   kéo ảnh chồng lên chữ, gây cảm giác chữ đè vào ảnh). */
 .invite-hero__script {
   position: relative;
-  z-index: 2;
   font-family: var(--font-copper);
   font-size: clamp(3rem, 13vw, 4.6rem);
   line-height: 0.9;
   color: rgba(60, 59, 61, 0.26);
-  margin-bottom: -0.3em;
+  margin-bottom: clamp(0.5rem, 2vw, 1rem);
   pointer-events: none;
 }
 
@@ -251,9 +252,15 @@
 
 .invite-hero__names {
   margin-top: clamp(1rem, 4vw, 1.6rem);
+  padding-inline: 0.75rem;
   font-family: var(--font-script);
-  font-size: clamp(1.7rem, 7vw, 2.4rem);
-  font-weight: 600;
+  /* Tên cô dâu chú rể là thông tin quan trọng nhất trang — cần nổi bật hơn
+     mọi tiêu đề trang trí khác (.script-title tối đa 3.2rem), nhưng vw phải
+     đủ nhỏ để tên dài (có dấu, có "&") không chạm mép màn hình hẹp. */
+  font-size: clamp(1.9rem, 8vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: break-word;
   color: var(--ink);
 }
 
@@ -262,6 +269,10 @@
   font-size: clamp(1.3rem, 5.5vw, 1.75rem);
   font-weight: 300;
   letter-spacing: 0.16em;
+  /* Cormorant Garamond mặc định dùng số kiểu cổ (oldstyle, cao thấp lệch
+     nhau, số 7 có đuôi thụt xuống) — ép về số kiểu lining cho ngày tháng
+     đọc thẳng hàng, dễ đọc như số thường. */
+  font-variant-numeric: lining-nums;
   color: var(--ink-soft);
 }
 
@@ -296,6 +307,68 @@
   height: 1px;
   margin: 0.9rem auto 0;
   background: linear-gradient(90deg, transparent, var(--gold-soft), transparent);
+}
+
+/* ===================================================================
+   2c · ĐẾM NGƯỢC NGÀY CƯỚI
+   =================================================================== */
+.invite-countdown {
+  padding: 0 clamp(1rem, 5vw, 1.6rem) clamp(2.5rem, 9vw, 4rem);
+  text-align: center;
+}
+
+.invite-countdown__eyebrow {
+  display: block;
+  font-size: 0.66rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 0.5rem;
+}
+
+.invite-countdown__units {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: clamp(1.2rem, 5vw, 1.8rem);
+}
+
+.invite-countdown__group {
+  display: flex;
+  align-items: flex-end;
+}
+
+.invite-countdown__unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: clamp(48px, 13vw, 64px);
+}
+
+.invite-countdown__value {
+  font-family: var(--font-serif);
+  font-size: clamp(1.8rem, 7.5vw, 2.5rem);
+  font-weight: 500;
+  font-variant-numeric: lining-nums;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.invite-countdown__label {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.invite-countdown__sep {
+  align-self: flex-start;
+  margin: 0.1rem 0.2rem 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.3rem, 5vw, 1.7rem);
+  color: var(--gold-soft);
 }
 
 /* ===================================================================
@@ -377,6 +450,7 @@
   font-size: clamp(1.15rem, 5vw, 1.5rem);
   font-weight: 400;
   letter-spacing: 0.06em;
+  font-variant-numeric: lining-nums;
   color: var(--ink);
   line-height: 1.2;
 }
@@ -480,34 +554,30 @@
 .invite-ceremony__title { margin-bottom: 0.5rem; }
 
 .invite-ceremony__line {
+  margin-bottom: 0.5rem;
   font-family: var(--font-serif);
   font-size: clamp(1.05rem, 4.6vw, 1.35rem);
   font-weight: 400;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
+  font-variant-numeric: lining-nums;
   color: var(--ink);
 }
 
 .invite-ceremony__lunar {
-  font-size: 0.72rem;
-  color: var(--ink-mute);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
   margin-bottom: clamp(0.8rem, 4vw, 1.4rem);
 }
 
 .invite-ceremony__stage { position: relative; }
 
-.invite-ceremony__arc {
-  display: block;
-  width: 100%;
-  height: auto;
-  margin-bottom: -14%;
-}
-
-.invite-ceremony__arc-text {
+.invite-ceremony__welcome {
+  margin-bottom: clamp(0.9rem, 4vw, 1.4rem);
   font-family: var(--font-serif);
-  font-size: 17px;
+  font-size: 0.78rem;
   font-weight: 400;
   letter-spacing: 0.26em;
-  fill: var(--ink-soft);
+  color: var(--ink-soft);
 }
 
 .invite-ceremony__arch {
@@ -516,8 +586,9 @@
   margin: 0 auto;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  /* Hình vòm: bo tròn hoàn toàn phần đầu, đáy vuông */
-  border-radius: 50% 50% 6px 6px / 40% 40% 6px 6px;
+  /* Hình vòm: bo tròn phần đầu, đáy cũng bo nhẹ để không bị hụt góc vuông
+     gắt nhìn như ảnh bo dở — 28px đủ mềm mà vẫn giữ dáng vòm cổng cưới. */
+  border-radius: 50% 50% 28px 28px / 40% 40% 28px 28px;
   background: var(--paper-soft);
 
   img {
@@ -585,136 +656,219 @@
   text-align: center;
 }
 
-.invite-venue__eyebrow {
-  font-size: 0.72rem;
+.invite-venue__note {
+  margin: 0.6rem 0 1.5rem;
+  font-size: 0.75rem;
   color: var(--ink-soft);
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  margin-bottom: 0.5rem;
 }
 
-.invite-venue__kicker {
-  font-family: var(--font-serif);
-  font-size: clamp(0.95rem, 4vw, 1.15rem);
-  letter-spacing: 0.14em;
-  color: var(--ink);
+.invite-venue__list {
+  display: grid;
+  gap: 1rem;
+}
+
+.invite-venue__card {
+  min-width: 0;
+  padding: clamp(1.2rem, 5vw, 1.8rem);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--paper-white);
+  box-shadow: 0 4px 18px rgba(60, 59, 61, 0.04);
+  overflow-wrap: anywhere;
 }
 
 .invite-venue__name {
-  margin-bottom: clamp(0.8rem, 4vw, 1.2rem);
-  font-size: clamp(2rem, 8.5vw, 2.8rem);
+  margin: 0 0 0.5rem;
+  font-family: var(--font-copper);
+  font-size: clamp(2rem, 8vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--gold);
 }
 
-.invite-venue__map {
-  overflow: hidden;
-  border-radius: 4px;
-  background: var(--paper-soft);
-  box-shadow: 0 2px 14px rgba(60, 59, 61, 0.08);
-
-  iframe {
-    display: block;
-    width: 100%;
-    height: clamp(180px, 46vw, 240px);
-    border: 0;
-    filter: saturate(0.9);
-  }
+.invite-venue__date {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ink);
 }
 
-.invite-venue__link {
-  display: inline-block;
-  margin-top: 0.7rem;
-  font-size: 0.75rem;
+.invite-venue__location {
+  margin: 1rem 0 0.3rem;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.invite-venue__address {
+  margin: 0;
+  font-size: 0.8rem;
   color: var(--ink-soft);
-  border-bottom: 1px solid var(--hairline);
+}
+
+.invite-venue__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1.2rem;
+}
+
+.invite-venue__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+
+  &--primary { background: var(--gold-soft); }
+  &:hover { background: var(--paper); }
+  &:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 }
 
 /* ===================================================================
    7 · TIMELINE
    =================================================================== */
-.invite-timeline { padding: 0 0 clamp(2.5rem, 9vw, 4rem); }
+.invite-guestbook {
+  padding: 0 clamp(1rem, 5vw, 1.6rem) clamp(2.5rem, 9vw, 4rem);
+  text-align: center;
+}
 
-.invite-timeline .script-title { margin-bottom: clamp(1.2rem, 5vw, 1.8rem); }
+.invite-guestbook__intro {
+  margin: 0.7rem 0 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
 
-.invite-timeline__scroller {
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+.invite-guestbook__status {
+  margin: 0.5rem 0 1.2rem;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
 
-  &::-webkit-scrollbar { display: none; }
+.invite-guestbook__list {
+  display: grid;
+  gap: 0.8rem;
+  max-height: 26rem;
+  overflow-y: auto;
+  margin: 0 0 1.2rem;
+  padding: 0.3rem;
+  list-style: none;
+  text-align: left;
+
+  &:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+}
+
+.invite-guestbook__wish,
+.invite-guestbook__empty {
+  padding: 1.1rem;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: var(--paper-white);
+  overflow-wrap: anywhere;
+}
+
+.invite-guestbook__author {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+.invite-guestbook__message {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.invite-guestbook__date {
+  display: block;
+  margin-top: 0.6rem;
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+}
+
+.invite-guestbook__empty {
+  margin-bottom: 1.2rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.invite-timeline {
+  margin-top: 1.2rem;
+  border-top: 1px solid var(--hairline);
+}
+
+.invite-timeline__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.7rem 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.8rem;
+  text-align: left;
+  cursor: pointer;
+
+  svg { width: 20px; height: 20px; flex-shrink: 0; }
+  &[aria-expanded='true'] svg { transform: rotate(180deg); }
+  &:hover { color: var(--gold); }
+  &:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 }
 
 .invite-timeline__track {
-  position: relative;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(88px, 1fr);
-  align-items: start;
-  gap: 0;
-  min-width: 100%;
-  padding: 0 clamp(0.6rem, 3vw, 1rem);
+  margin: 0.5rem 0 0 0.3rem;
+  padding: 0;
   list-style: none;
-
-  /* Đường kẻ ngang nối các vòng tròn icon */
-  &::before {
-    content: '';
-    position: absolute;
-    left: 12%;
-    right: 12%;
-    top: 58px;
-    height: 1px;
-    background: var(--hairline);
-  }
+  text-align: left;
 }
 
 .invite-timeline__item {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-  text-align: center;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: 0.7rem;
+  padding: 0 0 1.2rem 1rem;
+  border-left: 1px solid var(--gold-soft);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0.4rem;
+    left: -4px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+  &:last-child { padding-bottom: 0.3rem; border-left-color: transparent; }
 }
 
 .invite-timeline__time {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 62px;
-  padding: 0.18rem 0.6rem;
-  margin-bottom: 0.55rem;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
-  background: var(--paper-white);
-  font-family: var(--font-serif);
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--gold);
 }
 
-.invite-timeline__dot {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--hairline);
-  border-radius: 50%;
-  background: var(--paper-white);
+.invite-timeline__label,
+.invite-timeline__empty {
+  font-size: 0.8rem;
   color: var(--ink-soft);
-}
-
-.invite-timeline__glyph { width: 24px; height: 24px; }
-
-.invite-timeline__label {
-  margin-top: 0.35rem;
-  font-size: 0.66rem;
-  color: var(--ink);
-  line-height: 1.4;
-}
-
-.invite-timeline__place {
-  font-size: 0.62rem;
-  color: var(--ink-mute);
-  line-height: 1.4;
 }
 
 /* ===================================================================
@@ -816,8 +970,11 @@
 
 .invite-rsvp__title {
   font-family: var(--font-sans);
-  font-size: clamp(1.15rem, 5vw, 1.4rem);
-  font-weight: 500;
+  /* Đây là section chốt hành động (RSVP) — không được nhỏ hơn hẳn các tiêu
+     đề trang trí khác trong trang, nếu không sẽ trông kém quan trọng. */
+  font-size: clamp(1.7rem, 6.5vw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--ink);
   margin-bottom: 0.5rem;
 }
@@ -867,8 +1024,9 @@
 
 .invite-gift__title {
   font-family: var(--font-sans);
-  font-size: clamp(1.15rem, 5vw, 1.4rem);
-  font-weight: 400;
+  font-size: clamp(1.7rem, 6.5vw, 2.2rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
   color: var(--ink);
   margin-bottom: clamp(0.8rem, 4vw, 1.2rem);
 }
@@ -962,7 +1120,7 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.45s var(--ease-out-quint);
   }
 
   &.cell-0 { grid-row: span 2; }
@@ -1131,6 +1289,11 @@
   svg { width: 18px; height: 18px; flex-shrink: 0; }
 }
 
+.invite-dock__item {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .invite-dock__icon {
   display: grid;
   place-items: center;
@@ -1146,6 +1309,23 @@
   cursor: pointer;
 
   svg { width: 20px; height: 20px; }
+}
+
+/* Nhãn nhỏ luôn hiện phía trên icon để đồng bộ mức độ rõ ràng với nút
+   "Gửi lời chúc..." cạnh bên (có chữ hiển thị sẵn), thay vì chỉ dựa vào
+   aria-label mà mắt thường không thấy được. */
+.invite-dock__caption {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 /* ===================================================================
@@ -1173,7 +1353,7 @@
   padding: 2rem clamp(1.2rem, 6vw, 2rem) calc(1.6rem + env(safe-area-inset-bottom, 0px));
   background: var(--paper, #f1f2f6);
   border-radius: 14px 14px 0 0;
-  animation: inviteSheetUp 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: inviteSheetUp 0.32s var(--ease-out-quint);
   text-align: center;
 
   &:focus-visible { outline: none; }
@@ -1319,7 +1499,6 @@
 
   .invite-story__text  { font-size: 0.78rem; }
   .invite-timeline__label { font-size: 0.74rem; }
-  .invite-timeline__place { font-size: 0.7rem; }
   .invite-album__grid { grid-auto-rows: 84px; }
 }
 
@@ -1351,8 +1530,6 @@
   }
 
   .invite .invite-rsvp,
-  .invite .invite-timeline__time,
-  .invite .invite-timeline__dot,
   .invite .invite-booth__strip,
   .invite .invite-gift__card { background: #fdfdfe; }
 

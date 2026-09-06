@@ -81,7 +81,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         aria-labelledby={titleId}
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 id={titleId} className="font-bellota text-2xl text-primary">{title}</h3>
+          <h3 id={titleId} className="font-cormorant text-2xl italic text-primary" style={{ fontWeight: 600 }}>{title}</h3>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -103,11 +103,16 @@ export function GuestbookModal() {
   // Mở bằng link cá nhân hoá thì khỏi bắt khách gõ lại tên.
   const [name, setName] = useState(guest?.name ?? '');
   const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !message.trim()) {
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) newErrors.name = 'Vui lòng nhập tên của bạn.';
+    if (!message.trim()) newErrors.message = 'Vui lòng nhập lời chúc.';
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
       showToast('Vui lòng nhập đầy đủ thông tin!', 'error');
       return;
     }
@@ -132,7 +137,7 @@ export function GuestbookModal() {
       onClose={() => closeModal('guestbook')}
       title="Gửi Lời Chúc"
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <div className="form-group">
           <label className="form-label" htmlFor="modal-wish-name">Tên của bạn *</label>
           <input
@@ -140,12 +145,15 @@ export function GuestbookModal() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="form-input"
+            className={`form-input ${errors.name ? 'input-error' : ''}`}
             placeholder="Nhập tên của bạn"
             autoComplete="name"
             maxLength={80}
             required
+            aria-invalid={Boolean(errors.name)}
+            aria-describedby={errors.name ? 'modal-wish-name-error' : undefined}
           />
+          {errors.name && <p id="modal-wish-name-error" className="form-error">{errors.name}</p>}
         </div>
 
         <div className="form-group">
@@ -154,11 +162,14 @@ export function GuestbookModal() {
             id="modal-wish-message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="form-textarea"
+            className={`form-textarea ${errors.message ? 'input-error' : ''}`}
             placeholder="Nhập lời chúc của bạn..."
             maxLength={500}
             required
+            aria-invalid={Boolean(errors.message)}
+            aria-describedby={errors.message ? 'modal-wish-message-error' : undefined}
           />
+          {errors.message && <p id="modal-wish-message-error" className="form-error">{errors.message}</p>}
         </div>
 
         {/* Suggested Wishes */}

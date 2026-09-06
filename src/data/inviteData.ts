@@ -2,7 +2,7 @@
  * Nội dung cho giao diện thiệp "Ngày chung đôi" (bản dựng lại theo video demo).
  * Cấu trúc bám sát thứ tự các màn trong demo:
  *   Bìa thiệp → Save The Date → Our Love Story → Và hôm nay → Cô dâu / Chú rể
- *   → Wedding Ceremony → Địa chỉ tổ chức → TimeLine → Photobooth
+ *   → Wedding Ceremony → Địa chỉ tổ chức / lịch trình từng tiệc → Photobooth
  *   → R.S.V.P → Hộp Quà Mừng → Album Ảnh Cưới → Lời cảm ơn
  *
  * Thông tin cô dâu / chú rể / ngày cưới / ảnh dùng chung với `weddingData`
@@ -19,14 +19,6 @@ const date = weddingData.weddingDate;
 const { year, month, day, weekday, hour, minute } = getDateParts(date);
 const displayDate = `${pad2(day)}.${pad2(month)}.${year}`;
 
-const venue = {
-  eyebrow: 'địa chỉ tổ chức',
-  kicker: 'TẠI TRUNG TÂM TIỆC CƯỚI',
-  // ⚠️ Đổi thành tên + địa chỉ thật; địa chỉ được dùng luôn cho bản đồ Google.
-  name: 'Trung Tâm Tiệc Cưới',
-  address: 'Địa chỉ sẽ cập nhật',
-};
-
 export const inviteData = {
   /* ── Bìa thiệp (màn đầu tiên, chạm để mở) ───────────────────── */
   cover: {
@@ -37,8 +29,8 @@ export const inviteData = {
   hero: {
     script: 'Save The Date',
     image: weddingData.heroSlides[0],
-    /** Demo in tên cô dâu trước, rồi tới chú rể. */
-    names: `${weddingData.bride.shortName} & ${weddingData.groom.shortName}`,
+    /** Tên chú rể trước, cô dâu sau — khớp với thứ tự dùng ở Header/HeroSection bản classic. */
+    names: `${weddingData.groom.shortName} & ${weddingData.bride.shortName}`,
     dateDisplay: displayDate,
     /** Chữ ký mờ phía dưới ảnh, giống dòng "Charoline" trong demo. */
     studio: weddingData.monogram,
@@ -54,7 +46,7 @@ export const inviteData = {
     milestones: [
       {
         id: 1,
-        year: '2017',
+        year: '2020',
         title: 'How We Met',
         text: weddingData.story[0].content,
         image: weddingData.story[0].image,
@@ -62,7 +54,7 @@ export const inviteData = {
       },
       {
         id: 2,
-        year: '2018',
+        year: '2022',
         title: 'First Adventure',
         text: weddingData.story[1].content,
         image: weddingData.story[1].image,
@@ -106,24 +98,17 @@ export const inviteData = {
   /* ── Wedding Ceremony ───────────────────────────────────────── */
   ceremony: {
     title: 'Wedding Ceremony',
-    /** "11 GIỜ - 11/01/2027 - THỨ 2" */
-    line: `${hour}${minute ? `:${pad2(minute)}` : ''} GIỜ - ${pad2(day)}/${pad2(month)}/${year} - ${WEEKDAY_VI[weekday]}`,
+    /** "11 GIỜ · 11/01/2027 · THỨ 2" — dùng dấu chấm giữa cho thanh thoát, đỡ khô khan hơn gạch nối. */
+    line: `${hour}${minute ? `:${pad2(minute)}` : ''} GIỜ · ${pad2(day)}/${pad2(month)}/${year} · ${WEEKDAY_VI[weekday]}`,
     welcome: 'WELCOME TO OUR WEDDING',
     image: weddingData.heroSlides[2],
   },
 
   /* ── Địa chỉ tổ chức ────────────────────────────────────────── */
-  venue,
-
-  /* ── TimeLine (4 mốc giờ trong ngày cưới) ───────────────────── */
-  timeline: {
-    title: 'TimeLine',
-    items: [
-      { id: 1, time: '04:30', label: 'Lễ rước dâu', place: 'Tại nhà gái', icon: 'car' as const },
-      { id: 2, time: '09:30', label: 'Thánh lễ hôn phối', place: 'Tại nhà thờ', icon: 'church' as const },
-      { id: 3, time: '11:00', label: 'Đón khách', place: 'Tại khách sạn', icon: 'arch' as const },
-      { id: 4, time: '11:30', label: 'Khai tiệc', place: 'Tại khách sạn', icon: 'cheers' as const },
-    ],
+  venue: {
+    title: 'Địa chỉ tổ chức',
+    // Dùng cùng sự kiện với giao diện classic và form RSVP.
+    events: weddingData.events,
   },
 
   /* ── Photobooth (dải ảnh polaroid + máy ảnh cổ) ─────────────── */
@@ -171,8 +156,6 @@ export const inviteData = {
   },
 
   weddingDate: date,
-  /** Chuỗi tra cứu cho iframe Google Maps ở phần "địa chỉ tổ chức". */
-  mapQuery: `${venue.name} ${venue.address}`.trim(),
 };
 
 export type InviteData = typeof inviteData;

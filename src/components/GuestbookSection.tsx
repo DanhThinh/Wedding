@@ -9,6 +9,7 @@ export default function GuestbookSection() {
   const { data, wishes, addWish, showToast, guestbookMode } = useWedding();
   const [name, setName] = useState('');
   const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const wishesListRef = useRef<HTMLDivElement>(null);
@@ -24,13 +25,17 @@ export default function GuestbookSection() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !message.trim()) {
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) newErrors.name = 'Vui lòng nhập tên của bạn.';
+    if (!message.trim()) newErrors.message = 'Vui lòng nhập lời chúc.';
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
       showToast('Vui lòng nhập đầy đủ thông tin!', 'error');
       shakeForm();
       return;
     }
     setIsSubmitting(true);
-    
+
     const saveMode = await addWish(name.trim(), message.trim());
     if (!saveMode) {
       setIsSubmitting(false);
@@ -40,7 +45,7 @@ export default function GuestbookSection() {
       mode: saveMode,
       source: 'section',
     });
-    
+
     // Success animation
     if (formRef.current && !prefersReducedMotion()) {
       gsap.fromTo(formRef.current,
@@ -48,7 +53,7 @@ export default function GuestbookSection() {
         { scale: 0.98, duration: 0.2, yoyo: true, repeat: 1, ease: 'power2.inOut' }
       );
     }
-    
+
     setName('');
     setMessage('');
     setIsSubmitting(false);
@@ -124,12 +129,15 @@ export default function GuestbookSection() {
                     type="text"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="form-input"
+                    className={`form-input ${errors.name ? 'input-error' : ''}`}
                     placeholder="Nhập tên của bạn"
                     required
                     autoComplete="name"
                     maxLength={80}
+                    aria-invalid={Boolean(errors.name)}
+                    aria-describedby={errors.name ? 'gb-name-error' : undefined}
                   />
+                  {errors.name && <p id="gb-name-error" className="form-error">{errors.name}</p>}
                 </div>
 
                 <div className="form-group">
@@ -143,11 +151,14 @@ export default function GuestbookSection() {
                     id="gb-msg"
                     value={message}
                     onChange={e => setMessage(e.target.value)}
-                    className="form-textarea"
+                    className={`form-textarea ${errors.message ? 'input-error' : ''}`}
                     placeholder="Nhập lời chúc của bạn..."
                     required
                     maxLength={500}
+                    aria-invalid={Boolean(errors.message)}
+                    aria-describedby={errors.message ? 'gb-msg-error' : undefined}
                   />
+                  {errors.message && <p id="gb-msg-error" className="form-error">{errors.message}</p>}
                 </div>
 
                 {/* Suggested wishes */}
