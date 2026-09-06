@@ -9,12 +9,15 @@
  * để chỉ phải sửa một chỗ.
  */
 import { weddingData } from './weddingData';
+import { getDateParts } from '../lib/date';
 
 const WEEKDAY_VI = ['CHỦ NHẬT', 'THỨ 2', 'THỨ 3', 'THỨ 4', 'THỨ 5', 'THỨ 6', 'THỨ 7'];
 
 const pad2 = (value: number) => value.toString().padStart(2, '0');
 
 const date = weddingData.weddingDate;
+const { year, month, day, weekday, hour, minute } = getDateParts(date);
+const displayDate = `${pad2(day)}.${pad2(month)}.${year}`;
 
 const venue = {
   eyebrow: 'địa chỉ tổ chức',
@@ -36,7 +39,7 @@ export const inviteData = {
     image: weddingData.heroSlides[0],
     /** Demo in tên cô dâu trước, rồi tới chú rể. */
     names: `${weddingData.bride.shortName} & ${weddingData.groom.shortName}`,
-    dateDisplay: `${pad2(date.getDate())}.${pad2(date.getMonth() + 1)}.${date.getFullYear()}`,
+    dateDisplay: displayDate,
     /** Chữ ký mờ phía dưới ảnh, giống dòng "Charoline" trong demo. */
     studio: weddingData.monogram,
   },
@@ -104,7 +107,7 @@ export const inviteData = {
   ceremony: {
     title: 'Wedding Ceremony',
     /** "11 GIỜ - 11/01/2027 - THỨ 2" */
-    line: `${date.getHours()} GIỜ - ${pad2(date.getDate())}/${pad2(date.getMonth() + 1)}/${date.getFullYear()} - ${WEEKDAY_VI[date.getDay()]}`,
+    line: `${hour}${minute ? `:${pad2(minute)}` : ''} GIỜ - ${pad2(day)}/${pad2(month)}/${year} - ${WEEKDAY_VI[weekday]}`,
     welcome: 'WELCOME TO OUR WEDDING',
     image: weddingData.heroSlides[2],
   },
@@ -163,7 +166,7 @@ export const inviteData = {
 
   /* ── Watermark dọc bên phải + thanh dock dưới cùng ──────────── */
   chrome: {
-    watermark: `${weddingData.monogram} · ${pad2(date.getDate())}.${pad2(date.getMonth() + 1)}.${date.getFullYear()}`,
+    watermark: `${weddingData.monogram} · ${displayDate}`,
     wishPlaceholder: 'Gửi lời chúc...',
   },
 

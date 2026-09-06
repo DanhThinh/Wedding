@@ -3,7 +3,7 @@
  * Gom về một chỗ để App / InvitePage / WeddingProvider không mỗi nơi
  * tự đọc sessionStorage một kiểu.
  */
-import { parseGuest, type Guest } from './guest';
+import { GUEST_NAME_PARAM, GUEST_TITLE_PARAM, parseGuest, type Guest } from './guest';
 
 const ENVELOPE_KEY = 'envelope-opened';
 const GUEST_KEY = 'wedding-guest';
@@ -79,4 +79,17 @@ export function resolveGuest(search: string): Guest | null {
     removeKey(ENVELOPE_KEY);
   }
   return fromUrl;
+}
+
+/** Read the invitation once, before React/Analytics, then remove personal URL parameters. */
+export function prepareGuestSession(): Guest | null {
+  const url = new URL(window.location.href);
+  const guest = resolveGuest(url.search);
+  if (url.searchParams.has(GUEST_NAME_PARAM) || url.searchParams.has(GUEST_TITLE_PARAM)) {
+    url.searchParams.delete(GUEST_NAME_PARAM);
+    url.searchParams.delete(GUEST_TITLE_PARAM);
+    // Keep router state, deployment subpath, other query parameters and anchors.
+    window.history.replaceState(window.history.state, '', url);
+  }
+  return guest;
 }

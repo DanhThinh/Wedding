@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useWedding } from '../hooks/weddingContext';
 import { createGoogleCalendarUrl, downloadIcs } from '../lib/calendar';
 import { trackEvent } from '../lib/analytics';
+import { hasMappableAddress } from '../lib/venue';
 import RevealTitle from './RevealTitle';
 
 const CalendarIcons = {
@@ -27,10 +28,6 @@ const CalendarIcons = {
 
 function mapsUrl(address: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
-}
-
-function hasMappableAddress(address: string) {
-  return address.trim().length > 0 && !/cập nhật|chưa có|đang cập nhật/i.test(address);
 }
 
 export default function EventsSection() {
@@ -228,7 +225,7 @@ export default function EventsSection() {
                     style={{ border: 0, borderRadius: 'var(--r-md)' }}
                     loading="lazy"
                     allowFullScreen
-                    referrerPolicy="no-referrer-when-downgrade"
+                    referrerPolicy="no-referrer"
                     src={getMapEmbedUrl(event.address)}
                   />
                   <div className="event-map-footer">

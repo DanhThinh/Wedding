@@ -16,6 +16,7 @@ import { trackEvent } from './lib/analytics';
 import { startRevealEngine } from './lib/reveal';
 import { startPointerFx } from './lib/pointerFx';
 import { getEnvelopeOpened, markEnvelopeOpened } from './lib/inviteSession';
+import type { Guest } from './lib/guest';
 import './styles/main.scss';
 
 const RSVPPage = lazy(() => import('./pages/RSVPPage'));
@@ -103,9 +104,9 @@ function AppContent() {
   );
 }
 
-function App() {
+function App({ guest }: { guest: Guest | null }) {
   return (
-    <WeddingProvider>
+    <WeddingProvider guest={guest}>
       <AppContent />
     </WeddingProvider>
   );

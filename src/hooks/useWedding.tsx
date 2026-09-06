@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { weddingData } from '../data/weddingData';
-import { resolveGuest } from '../lib/inviteSession';
+import type { Guest } from '../lib/guest';
 import { useGuestbook } from './useGuestbook';
 import { WeddingContext } from './weddingContext';
 import type { ModalState, ToastState } from './weddingContext';
@@ -24,11 +24,7 @@ function getSavedTheme(): 'light' | 'dark' {
   return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-export function WeddingProvider({ children }: { children: ReactNode }) {
-  /* Đọc một lần lúc khởi động. Provider render trước các trang con nên cờ
-     đã-mở-bìa (bị xoá khi đổi khách) đã ổn định trước khi InvitePage đọc tới. */
-  const [guest] = useState(() => resolveGuest(window.location.search));
-
+export function WeddingProvider({ children, guest }: { children: ReactNode; guest: Guest | null }) {
   const [toast, setToast] = useState<ToastState>({
     show: false,
     message: '',

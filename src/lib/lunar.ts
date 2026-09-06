@@ -4,8 +4,9 @@
  * Dùng cho dòng "(Tức ngày ... tháng ... âm lịch)" ở phần Wedding Ceremony.
  */
 
+import { getDateParts, VIETNAM_UTC_OFFSET_HOURS } from './date';
+
 const PI = Math.PI;
-const VN_TIMEZONE = 7;
 
 export interface LunarDate {
   day: number;
@@ -106,23 +107,24 @@ function getLeapMonthOffset(a11: number, timeZone: number) {
   return i - 1;
 }
 
-export function solarToLunar(date: Date, timeZone = VN_TIMEZONE): LunarDate {
-  const dayNumber = jdFromDate(date.getDate(), date.getMonth() + 1, date.getFullYear());
+export function solarToLunar(date: Date, timeZone = VIETNAM_UTC_OFFSET_HOURS): LunarDate {
+  const { day, month, year } = getDateParts(date, timeZone);
+  const dayNumber = jdFromDate(day, month, year);
   const k = Math.floor((dayNumber - 2415021.076998695) / 29.530588853);
 
   let monthStart = getNewMoonDay(k + 1, timeZone);
   if (monthStart > dayNumber) monthStart = getNewMoonDay(k, timeZone);
 
-  let a11 = getLunarMonth11(date.getFullYear(), timeZone);
+  let a11 = getLunarMonth11(year, timeZone);
   let b11 = a11;
   let lunarYear: number;
 
   if (a11 >= monthStart) {
-    lunarYear = date.getFullYear();
-    a11 = getLunarMonth11(date.getFullYear() - 1, timeZone);
+    lunarYear = year;
+    a11 = getLunarMonth11(year - 1, timeZone);
   } else {
-    lunarYear = date.getFullYear() + 1;
-    b11 = getLunarMonth11(date.getFullYear() + 1, timeZone);
+    lunarYear = year + 1;
+    b11 = getLunarMonth11(year + 1, timeZone);
   }
 
   const lunarDay = dayNumber - monthStart + 1;

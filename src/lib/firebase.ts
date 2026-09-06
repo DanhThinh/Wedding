@@ -10,6 +10,7 @@
 import type { FirebaseApp } from 'firebase/app';
 import type { Analytics } from 'firebase/analytics';
 import type { Firestore } from 'firebase/firestore';
+import { getAnalyticsPageParams } from './analyticsPrivacy';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
@@ -63,7 +64,7 @@ export function getFirebaseClient(): Promise<FirebaseClient | null> {
     }
 
     const analyticsInstance = firebaseConfig.measurementId && await analytics.isSupported()
-      ? analytics.getAnalytics(app)
+      ? analytics.initializeAnalytics(app, { config: getAnalyticsPageParams() })
       : undefined;
 
     return { app, analytics: analyticsInstance, db: firestore.getFirestore(app) };

@@ -1,4 +1,5 @@
 import { getFirebaseClient } from './firebase';
+import { getAnalyticsPageParams } from './analyticsPrivacy';
 
 type AnalyticsValue = string | number | boolean | null | undefined;
 type AnalyticsParams = Record<string, AnalyticsValue>;
@@ -6,6 +7,7 @@ type AnalyticsParams = Record<string, AnalyticsValue>;
 const BLOCKED_PARAM_KEYS = [
   'address',
   'email',
+  'guest',
   'message',
   'name',
   'note',
@@ -43,7 +45,10 @@ export async function trackEvent(eventName: AnalyticsEventName, params: Analytic
     const client = await getFirebaseClient();
     if (!client?.analytics) return;
     const { logEvent } = await import('firebase/analytics');
-    logEvent(client.analytics, eventName, sanitizeAnalyticsParams(params));
+    logEvent(client.analytics, eventName, {
+      ...sanitizeAnalyticsParams(params),
+      ...getAnalyticsPageParams(),
+    });
   } catch (err) {
     if (import.meta.env.DEV) {
       console.warn('[Analytics] Không thể ghi event:', eventName, err);

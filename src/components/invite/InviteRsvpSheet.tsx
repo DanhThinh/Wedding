@@ -18,6 +18,7 @@ export default function InviteRsvpSheet({ open, onClose }: InviteRsvpSheetProps)
   const { rsvp } = inviteData;
   const { showToast, guest } = useWedding();
   const sheetRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
   const fieldId = useId().replace(/:/g, '');
 
   const [attending, setAttending] = useState<boolean | null>(null);
@@ -28,29 +29,77 @@ export default function InviteRsvpSheet({ open, onClose }: InviteRsvpSheetProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
     if (!open) return;
 
+    const panel = sheetRef.current;
+    if (!panel) return;
     const previousOverflow = document.body.style.overflow;
     const previouslyFocused = document.activeElement as HTMLElement | null;
     document.body.style.overflow = 'hidden';
-    sheetRef.current?.focus();
+    panel.focus();
+
+    // Disable the background without making an ancestor of the dialog inert.
+    const background = new Map<Element, string | null>();
+    let branch = panel.parentElement;
+    while (branch && branch !== document.body) {
+      for (const sibling of branch.parentElement?.children ?? []) {
+        if (sibling === branch) continue;
+        background.set(sibling, sibling.getAttribute('inert'));
+        sibling.setAttribute('inert', '');
+      }
+      branch = branch.parentElement;
+    }
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = Array.from(panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ));
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (!first || !last) {
+        event.preventDefault();
+        panel.focus();
+      } else if (!panel.contains(active) || active === panel) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', onKeyDown);
 
     return () => {
       document.removeEventListener('keydown', onKeyDown);
+      background.forEach((inert, element) => {
+        if (inert === null) element.removeAttribute('inert');
+        else element.setAttribute('inert', inert);
+      });
       document.body.style.overflow = previousOverflow;
       if (previouslyFocused?.isConnected) previouslyFocused.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (isSubmitting) return;
     if (attending === null) {
       setError('Vui lòng chọn một lựa chọn tham dự');
       return;
@@ -64,19 +113,23 @@ export default function InviteRsvpSheet({ open, onClose }: InviteRsvpSheetProps)
 
     setError('');
     setIsSubmitting(true);
-    const mode = await saveAttendance({ name, attending, message });
-    setIsSubmitting(false);
+    try {
+      const mode = await saveAttendance({ name, attending, message });
+      void trackEvent('rsvp_submit', { mode, attending: String(attending) });
+      showToast(
+        mode === 'firestore' ? 'Cảm ơn bạn đã xác nhận!' : 'Đã lưu xác nhận trên thiết bị này.',
+        mode === 'firestore' ? 'success' : 'info',
+      );
 
-    void trackEvent('rsvp_submit', { mode, attending: String(attending) });
-    showToast(
-      mode === 'firestore' ? 'Cảm ơn bạn đã xác nhận!' : 'Đã lưu xác nhận trên thiết bị này.',
-      mode === 'firestore' ? 'success' : 'info',
-    );
-
-    setAttending(null);
-    setName(guest?.name ?? '');
-    setMessage('');
-    onClose();
+      setAttending(null);
+      setName(guest?.name ?? '');
+      setMessage('');
+      onClose();
+    } catch {
+      setError('Không thể lưu xác nhận. Thông tin của bạn vẫn được giữ lại, vui lòng thử lại.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

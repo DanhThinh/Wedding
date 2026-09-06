@@ -87,15 +87,14 @@ export function validateAttendance(input: AttendanceSubmission) {
 }
 
 function saveAttendanceLocally(input: AttendanceSubmission) {
-  try {
-    const raw = localStorage.getItem(ATTENDANCE_STORAGE_KEY);
-    const parsed = raw ? (JSON.parse(raw) as unknown) : [];
-    const stored = Array.isArray(parsed) ? parsed : [];
-    stored.push({ ...input, submittedAt: new Date().toISOString() });
-    localStorage.setItem(ATTENDANCE_STORAGE_KEY, JSON.stringify(stored));
-  } catch {
-    // Storage bị chặn — vẫn coi như gửi xong để người dùng không bị kẹt.
+  const raw = localStorage.getItem(ATTENDANCE_STORAGE_KEY);
+  const stored: unknown = raw ? JSON.parse(raw) : [];
+  if (!Array.isArray(stored)) {
+    throw new Error('Dữ liệu xác nhận đã lưu không hợp lệ');
   }
+  stored.push({ ...input, submittedAt: new Date().toISOString() });
+  // Let the form report failure and retain the draft if storage is unavailable.
+  localStorage.setItem(ATTENDANCE_STORAGE_KEY, JSON.stringify(stored));
 }
 
 export async function saveAttendance(input: AttendanceSubmission): Promise<RsvpSaveMode> {

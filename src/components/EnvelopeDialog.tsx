@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useWedding } from '../hooks/weddingContext';
 import gsap from 'gsap';
+import { getDateParts } from '../lib/date';
 
 interface EnvelopeDialogProps {
   onOpen: () => void;
@@ -8,6 +9,7 @@ interface EnvelopeDialogProps {
 
 export default function EnvelopeDialog({ onOpen }: EnvelopeDialogProps) {
   const { data } = useWedding();
+  const { year, month, day, weekday, hour, minute } = getDateParts(data.weddingDate);
   const [isHidden, setIsHidden] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
 
@@ -255,21 +257,21 @@ export default function EnvelopeDialog({ onOpen }: EnvelopeDialogProps) {
           <div className="wedding-datetime">
             <div className="datetime-block">
               <span className="datetime-value">
-                {data.weddingDate.getHours()}:{data.weddingDate.getMinutes().toString().padStart(2, '0')}
+                {hour}:{minute.toString().padStart(2, '0')}
               </span>
               <span className="datetime-label">GIỜ</span>
             </div>
             <div className="datetime-divider" />
             <div className="datetime-block">
               <span className="datetime-value">
-                {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][data.weddingDate.getDay()]}
+                {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][weekday]}
               </span>
               <span className="datetime-label">THỨ</span>
             </div>
             <div className="datetime-divider" />
             <div className="datetime-block">
               <span className="datetime-value">
-                {data.weddingDate.getDate()}/{data.weddingDate.getMonth() + 1}/{data.weddingDate.getFullYear()}
+                {day}/{month}/{year}
               </span>
               <span className="datetime-label">NGÀY</span>
             </div>

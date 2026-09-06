@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { inviteData } from '../../data/inviteData';
 import { formatLunarLine } from '../../lib/lunar';
+import { getDateParts } from '../../lib/date';
 import { setImageFallback } from '../../lib/imageFallback';
 import { HeartSolid } from './art';
 
@@ -8,11 +9,10 @@ const WEEKDAY_HEAD = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 
 /** Lưới ngày của tháng cưới, tuần bắt đầu từ Thứ 2 (chuẩn VN). */
 function buildMonthGrid(date: Date) {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  // getDay(): 0 = CN → đẩy về cuối tuần.
-  const leadingBlanks = (new Date(year, month, 1).getDay() + 6) % 7;
+  const { year, month } = getDateParts(date);
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  // 0 = CN → đẩy về cuối tuần.
+  const leadingBlanks = (new Date(Date.UTC(year, month - 1, 1)).getUTCDay() + 6) % 7;
 
   return [
     ...Array.from({ length: leadingBlanks }, () => null),
@@ -28,7 +28,7 @@ export default function InviteCeremony() {
   const { ceremony, weddingDate } = inviteData;
   const arcId = useId().replace(/:/g, '');
   const grid = buildMonthGrid(weddingDate);
-  const weddingDay = weddingDate.getDate();
+  const weddingDay = getDateParts(weddingDate).day;
 
   return (
     <section className="invite-ceremony" id="ceremony">

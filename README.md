@@ -32,6 +32,10 @@ ngày cưới và ảnh từ `weddingData.ts`). Cần sửa tay hai chỗ:
 - `venue.name` / `venue.address` — cũng là chuỗi tra cứu cho bản đồ Google.
 - `timeline.items` — 4 mốc giờ trong ngày cưới.
 
+Bản đồ và liên kết chỉ đường chỉ xuất hiện khi đã có địa chỉ thật; địa chỉ trống
+hoặc còn ghi “cập nhật” sẽ hiện thông báo chờ cập nhật. Ngày, giờ và lịch tháng
+trên thiệp luôn theo giờ Việt Nam (UTC+7), kể cả khi khách mở ở nước ngoài.
+
 Ngày âm lịch ở phần *Wedding Ceremony* được tính tự động từ `weddingDate`
 (`src/lib/lunar.ts`), không cần nhập tay.
 
@@ -50,6 +54,11 @@ https://danhthinh.github.io/Wedding/?t=Anh&guest=Nguyễn%20Văn%20Quang
 
 Khi có tên, thiệp sẽ: hiện "Trân trọng kính mời + tên" trên bìa, thêm khối
 "Thân mời" sau Save The Date, và điền sẵn ô họ tên ở phần R.S.V.P lẫn Gửi lời chúc.
+
+Sau khi đọc tên, ứng dụng ghi nhớ khách trong phiên và xóa `guest` / `t` khỏi
+thanh địa chỉ trước khi khởi tạo Analytics. Muốn chia sẻ lại thiệp cá nhân hóa,
+dùng link mời ban đầu hoặc link từ CSV. Analytics chỉ nhận đường dẫn trang,
+không nhận query string; bản đồ không được gửi kèm URL thiệp qua referrer.
 
 ### Sinh link hàng loạt
 
