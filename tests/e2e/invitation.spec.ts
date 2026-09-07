@@ -92,11 +92,13 @@ test('private guest report filters locally and exports a safe CSV', async ({ pag
   expect((await download).suggestedFilename()).toBe('danh-sach-khach.csv');
 });
 
-test('gift QR downloads and skip navigation remains hidden until focused', async ({ page }) => {
+test('gift QR stays hidden until the gift box is tapped, then downloads; skip navigation remains hidden until focused', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Mở thiệp cưới' }).click();
   await expect(page.locator('.skip-link')).toHaveCSS('clip-path', 'inset(100%)');
   await page.locator('#gift').scrollIntoViewIfNeeded();
+  await expect(page.getByRole('link', { name: 'Tải mã QR' })).toBeHidden();
+  await page.locator('.invite-gift__box-btn').click();
   const download = page.waitForEvent('download');
   await page.getByRole('link', { name: 'Tải mã QR' }).click();
   expect((await download).suggestedFilename()).toContain('groom-qr');
