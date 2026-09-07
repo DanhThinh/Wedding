@@ -1,13 +1,14 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sanitizeAnalyticsParams, trackEvent } from './analytics';
 import { getAnalyticsPageParams } from './analyticsPrivacy';
 
 const { logEvent, analytics } = vi.hoisted(() => ({ logEvent: vi.fn(), analytics: {} }));
-vi.mock('./firebase', () => ({ getFirebaseClient: async () => ({ analytics }) }));
+vi.mock('./firebase', () => ({ getFirebaseAnalytics: async () => analytics }));
 vi.mock('firebase/analytics', () => ({ logEvent }));
 
 const originalUrl = window.location.href;
-afterEach(() => window.history.replaceState(null, '', originalUrl));
+beforeEach(() => vi.stubEnv('VITE_FIREBASE_MEASUREMENT_ID', 'G-TEST'));
+afterEach(() => { window.history.replaceState(null, '', originalUrl); vi.unstubAllEnvs(); });
 
 describe('analytics helpers', () => {
   it('drops common PII params before logging events', () => {

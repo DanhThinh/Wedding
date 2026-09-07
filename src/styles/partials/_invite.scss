@@ -209,25 +209,37 @@
   text-align: center;
 }
 
-/* Chữ "Save The Date" nằm hẳn phía trên ảnh, có khoảng cách rõ ràng —
-   không lấn/đè vào khung ảnh bên dưới (trước đây dùng margin-bottom âm để
-   kéo ảnh chồng lên chữ, gây cảm giác chữ đè vào ảnh). */
+/* Thẻ ảnh kiểu polaroid: viền giấy trắng bao quanh ảnh + tên + ngày cưới,
+   tất cả nằm chung trong MỘT khung duy nhất (viền + bóng đổ rõ), thay vì
+   tên/ngày trôi nổi rời rạc bên dưới ảnh. Rộng hơn khung ảnh gốc (86%/420px)
+   để tên cô dâu chú rể đủ chỗ nằm một dòng, không bị xuống dòng giữa chừng. */
+.invite-hero__frame {
+  width: min(96%, 480px);
+  margin: 0 auto;
+  padding: 12px 12px 0;
+  border: 1px solid rgba(60, 59, 61, 0.1);
+  border-radius: 6px;
+  background: var(--paper-white);
+  box-shadow: 0 14px 34px rgba(60, 59, 61, 0.16), 0 2px 8px rgba(60, 59, 61, 0.08);
+}
+
+/* Chữ "Save The Date" giờ nằm bên trong khung (không còn trôi nổi phía trên
+   ảnh), làm nhãn nhỏ đầu thẻ polaroid — nên cỡ chữ thu lại cho vừa bề rộng
+   khung, khác với bản cũ chiếm cả chiều ngang màn hình. */
 .invite-hero__script {
-  position: relative;
   font-family: var(--font-copper);
-  font-size: clamp(3rem, 13vw, 4.6rem);
-  line-height: 0.9;
-  color: rgba(60, 59, 61, 0.26);
-  margin-bottom: clamp(0.5rem, 2vw, 1rem);
+  font-size: clamp(2.1rem, 8.6vw, 3.1rem);
+  line-height: 1;
+  color: var(--gold-soft);
+  padding: 0.35rem 0 0.7rem;
   pointer-events: none;
 }
 
-.invite-hero__frame {
+.invite-hero__photo-wrap {
   position: relative;
-  width: min(86%, 420px);
-  margin: 0 auto;
   aspect-ratio: 3 / 4;
   overflow: hidden;
+  border-radius: 2px;
   background: var(--paper-soft);
 }
 
@@ -250,30 +262,43 @@
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
 }
 
+.invite-hero__caption {
+  padding: clamp(1rem, 4vw, 1.6rem) 0 clamp(1.1rem, 4vw, 1.7rem);
+  text-align: center;
+}
+
 .invite-hero__names {
-  margin-top: clamp(1rem, 4vw, 1.6rem);
-  padding-inline: 0.75rem;
+  padding-inline: 0.25rem;
   font-family: var(--font-script);
   /* Tên cô dâu chú rể là thông tin quan trọng nhất trang — cần nổi bật hơn
      mọi tiêu đề trang trí khác (.script-title tối đa 3.2rem), nhưng vw phải
-     đủ nhỏ để tên dài (có dấu, có "&") không chạm mép màn hình hẹp. */
-  font-size: clamp(1.9rem, 8vw, 2.8rem);
+     đủ nhỏ để tên dài (có dấu, có "&") nằm gọn một dòng trong khung, không
+     bị xuống dòng giữa chừng. */
+  font-size: clamp(1.75rem, 7.4vw, 2.75rem);
   font-weight: 700;
   line-height: 1.2;
-  overflow-wrap: break-word;
+  white-space: nowrap;
   color: var(--ink);
+}
+
+/* Vạch trang trí nhỏ tách tên và ngày cưới — thay cho khoảng trắng đơn điệu. */
+.invite-hero__divider {
+  width: 34px;
+  height: 1px;
+  margin: 0.6rem auto 0.65rem;
+  background: var(--gold-soft);
 }
 
 .invite-hero__date {
   font-family: var(--font-serif);
-  font-size: clamp(1.3rem, 5.5vw, 1.75rem);
+  font-size: clamp(1.45rem, 6vw, 2rem);
   font-weight: 300;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   /* Cormorant Garamond mặc định dùng số kiểu cổ (oldstyle, cao thấp lệch
      nhau, số 7 có đuôi thụt xuống) — ép về số kiểu lining cho ngày tháng
      đọc thẳng hàng, dễ đọc như số thường. */
   font-variant-numeric: lining-nums;
-  color: var(--ink-soft);
+  color: var(--gold);
 }
 
 /* ===================================================================
@@ -348,13 +373,42 @@
 }
 
 .invite-countdown__value {
+  display: flex;
   font-family: var(--font-serif);
   font-size: clamp(1.8rem, 7.5vw, 2.5rem);
   font-weight: 500;
-  font-variant-numeric: lining-nums;
+  /* `tabular-nums` là bắt buộc ở đây: chữ số lăn mỗi giây, nếu bề rộng mỗi số
+     khác nhau thì cả hàng đếm ngược sẽ giật sang trái/phải liên tục. */
+  font-variant-numeric: lining-nums tabular-nums;
   line-height: 1;
   color: var(--ink);
 }
+
+/* Khe cắt tràn để chữ số cũ khuất hẳn khi chữ số mới lăn lên thay chỗ.
+   `grid` để số đi và số đến nằm chồng đúng một ô — không cần định vị tuyệt đối,
+   và khe vẫn tự co theo bề rộng chữ số. Đệm dọc + lề âm để đỉnh/chân số không
+   bị mặt nạ cắt mất. */
+.invite-countdown__digit-slot {
+  display: grid;
+  overflow: hidden;
+  padding: 0.06em 0 0.1em;
+  margin: -0.06em 0 -0.1em;
+}
+
+.invite-countdown__digit {
+  grid-area: 1 / 1;
+  /* Ngắn hơn 1 nhịp đếm (1s) để số giây kịp đứng yên trước lần đổi kế tiếp. */
+  animation: countdownRollIn 0.5s var(--ease-out-quint);
+}
+
+/* `forwards` để số cũ nằm yên ngoài mặt nạ sau khi lăn xong, thay vì bật
+   trở lại chỗ cũ và đè lên số đang hiển thị. */
+.invite-countdown__digit.is-leaving {
+  animation: countdownRollOut 0.5s var(--ease-out-quint) forwards;
+}
+
+@keyframes countdownRollIn  { from { translate: 0 100%; } to { translate: 0 0; } }
+@keyframes countdownRollOut { from { translate: 0 0; }    to { translate: 0 -100%; } }
 
 .invite-countdown__label {
   font-size: 0.62rem;
@@ -571,13 +625,23 @@
 
 .invite-ceremony__stage { position: relative; }
 
+/* Chữ "WELCOME TO OUR WEDDING" bo cong theo đúng dáng vòm của ảnh bên dưới —
+   viewBox tỉ lệ (320 x 62) nên cung chữ co giãn cùng bề rộng ảnh vòm
+   (cùng min(84%, 360px)) ở mọi kích thước màn hình. */
 .invite-ceremony__welcome {
-  margin-bottom: clamp(0.9rem, 4vw, 1.4rem);
+  display: block;
+  width: min(84%, 360px);
+  height: auto;
+  margin: 0 auto clamp(-3.4rem, -8vw, -2.2rem);
+  overflow: visible;
+}
+
+.invite-ceremony__welcome-text {
   font-family: var(--font-serif);
-  font-size: 0.78rem;
-  font-weight: 400;
-  letter-spacing: 0.26em;
-  color: var(--ink-soft);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  fill: var(--ink-soft);
 }
 
 .invite-ceremony__arch {
@@ -646,6 +710,14 @@
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;
+  /* Nhịp đập rất chậm, biên độ nhỏ: đây là thứ duy nhất chuyển động trong
+     tấm lịch, đủ để mắt tìm ra đúng ngày cưới mà không thành đồ trang trí. */
+  animation: calendarHeartbeat 3.4s var(--ease-soft) infinite;
+}
+
+@keyframes calendarHeartbeat {
+  0%, 100% { scale: 1;    opacity: 0.9; }
+  50%      { scale: 1.13; opacity: 1; }
 }
 
 /* ===================================================================
@@ -1328,6 +1400,22 @@
   pointer-events: none;
 }
 
+/* Phản hồi khi bấm: thanh dock nổi trên nền mờ nên không có đổ bóng hay
+   viền để báo trạng thái — cú lún nhẹ là tín hiệu duy nhất cho người chạm.
+   Dùng thuộc tính `scale` riêng, không đụng `transform` căn giữa của dock. */
+.invite-dock__wish,
+.invite-dock__icon,
+.invite-music {
+  transition: scale 0.26s var(--ease-out-quint), background-color 0.26s ease;
+}
+
+.invite-dock__wish:active,
+.invite-dock__icon:active,
+.invite-music:active {
+  scale: 0.93;
+  transition-duration: 0.1s;
+}
+
 /* ===================================================================
    13 · BẢNG XÁC NHẬN THAM DỰ
    =================================================================== */
@@ -1506,6 +1594,20 @@
   .invite-music.is-playing .invite-music__bars i { animation: none; }
   .invite-sheet,
   .invite-sheet__panel { animation: none; }
+
+  /* Số đếm ngược vẫn phải đổi giá trị bình thường — chỉ bỏ cú lăn.
+     Phải nhắc lại cả selector `.is-leaving` (0,2,0): nếu chỉ tắt trên
+     `.invite-countdown__digit` (0,1,0) thì rule lăn-ra vẫn thắng và animation
+     tiếp tục chạy trên phần tử đã ẩn.
+     Số cũ ẩn hẳn, nếu không nó sẽ nằm chồng lên số mới trong cùng ô lưới. */
+  .invite-countdown__digit,
+  .invite-countdown__digit.is-leaving { animation: none; }
+  .invite-countdown__digit.is-leaving { visibility: hidden; }
+  .invite-calendar__heart { animation: none; }
+
+  .invite-dock__wish:active,
+  .invite-dock__icon:active,
+  .invite-music:active { scale: 1; }
 }
 
 /* ===================================================================

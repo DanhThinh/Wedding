@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
+import DeferredSection from '../components/DeferredSection';
 import Header from '../components/Header';
 import HeroSection from '../components/HeroSection';
 import CoupleSection from '../components/CoupleSection';
@@ -16,14 +17,14 @@ export default function HomePage() {
   return (
     <>
       <Header />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <HeroSection />
         <CoupleSection />
         <StorySection />
         <CountdownSection />
-        <Suspense fallback={<section id="album" className="album-loading section-cream" aria-busy="true" />}>
+        <DeferredSection id="album">
           <AlbumSection />
-        </Suspense>
+        </DeferredSection>
         <EventsSection />
         <GuestbookSection />
         <GiftBoxSection />

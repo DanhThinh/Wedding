@@ -27,7 +27,7 @@ const isTestMode = import.meta.env.MODE === 'test';
 
 /**
  * Kiểm tra Firebase đã được config chưa.
- * Nếu chưa, app sẽ fallback về localStorage (vẫn hoạt động).
+ * Nếu chưa, RSVP giữ bản nháp và báo chưa gửi được.
  */
 export const isFirebaseConfigured = Boolean(
   !isTestMode && firebaseConfig.apiKey && firebaseConfig.projectId
@@ -35,22 +35,17 @@ export const isFirebaseConfigured = Boolean(
 
 export interface FirebaseClient {
   app: FirebaseApp;
-  analytics?: Analytics;
   db: Firestore;
 }
 
+let appPromise: Promise<FirebaseApp | null> | null = null;
 let clientPromise: Promise<FirebaseClient | null> | null = null;
+let analyticsPromise: Promise<Analytics | null> | null = null;
 
-/** Firebase chỉ được tải khi một tính năng realtime thực sự cần dùng. */
-export function getFirebaseClient(): Promise<FirebaseClient | null> {
+function getFirebaseApp(): Promise<FirebaseApp | null> {
   if (!isFirebaseConfigured) return Promise.resolve(null);
-  if (clientPromise) return clientPromise;
-
-  clientPromise = Promise.all([
-    import('firebase/app'),
-    import('firebase/analytics'),
-    import('firebase/firestore'),
-  ]).then(async ([firebaseApp, analytics, firestore]) => {
+  if (appPromise) return appPromise;
+  appPromise = import('firebase/app').then(async firebaseApp => {
     const app = firebaseApp.getApps().length > 0
       ? firebaseApp.getApp()
       : firebaseApp.initializeApp(firebaseConfig);
@@ -63,16 +58,33 @@ export function getFirebaseClient(): Promise<FirebaseClient | null> {
       });
     }
 
-    const analyticsInstance = firebaseConfig.measurementId && await analytics.isSupported()
-      ? analytics.initializeAnalytics(app, { config: getAnalyticsPageParams() })
-      : undefined;
-
-    return { app, analytics: analyticsInstance, db: firestore.getFirestore(app) };
+    return app;
   }).catch((err) => {
     console.error('[Firebase] Khởi tạo thất bại:', err);
-    clientPromise = null;
+    appPromise = null;
     return null;
   });
+  return appPromise;
+}
 
+/** Load Firestore only for RSVP/guestbook, independently of optional Analytics. */
+export function getFirebaseClient(): Promise<FirebaseClient | null> {
+  if (!isFirebaseConfigured) return Promise.resolve(null);
+  if (clientPromise) return clientPromise;
+  clientPromise = Promise.all([getFirebaseApp(), import('firebase/firestore')]).then(([app, firestore]) => {
+    if (!app) { clientPromise = null; return null; }
+    return { app, db: firestore.getFirestore(app) };
+  }).catch(() => { clientPromise = null; return null; });
   return clientPromise;
+}
+
+/** Opening the cover may log an event, but must not pull in the Firestore bundle. */
+export function getFirebaseAnalytics(): Promise<Analytics | null> {
+  if (!isFirebaseConfigured || !firebaseConfig.measurementId) return Promise.resolve(null);
+  if (analyticsPromise) return analyticsPromise;
+  analyticsPromise = Promise.all([getFirebaseApp(), import('firebase/analytics')]).then(async ([app, analytics]) => {
+    if (!app) { analyticsPromise = null; return null; }
+    return await analytics.isSupported() ? analytics.initializeAnalytics(app, { config: getAnalyticsPageParams() }) : null;
+  }).catch(() => { analyticsPromise = null; return null; });
+  return analyticsPromise;
 }

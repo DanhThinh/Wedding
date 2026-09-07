@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/rsvp", "destination": "/index.html" }
+    { "source": "/((?!.*\\.).*)", "destination": "/index.html" }
   ]
 }

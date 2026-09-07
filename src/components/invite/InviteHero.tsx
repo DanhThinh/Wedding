@@ -7,21 +7,26 @@ export default function InviteHero() {
 
   return (
     <section className="invite-hero" id="hero">
-      <p className="invite-hero__script" data-reveal="fade">{hero.script}</p>
-
       <div className="invite-hero__frame" data-reveal="scale">
-        <img
-          src={hero.image}
-          alt={`Ảnh cưới ${hero.names}`}
-          className="invite-hero__photo"
-          fetchPriority="high"
-          onError={event => setImageFallback(event.currentTarget)}
-        />
-        <span className="invite-hero__studio">{hero.studio}</span>
-      </div>
+        <p className="invite-hero__script">{hero.script}</p>
 
-      <h1 className="invite-hero__names" data-reveal="up">{hero.names}</h1>
-      <p className="invite-hero__date" data-reveal="up">{hero.dateDisplay}</p>
+        <div className="invite-hero__photo-wrap">
+          <img
+            src={hero.image}
+            alt={`Ảnh cưới ${hero.names}`}
+            className="invite-hero__photo"
+            fetchPriority="high"
+            onError={event => setImageFallback(event.currentTarget)}
+          />
+          <span className="invite-hero__studio">{hero.studio}</span>
+        </div>
+
+        <div className="invite-hero__caption">
+          <h1 className="invite-hero__names">{hero.names}</h1>
+          <div className="invite-hero__divider" aria-hidden="true" />
+          <p className="invite-hero__date">{hero.dateDisplay}</p>
+        </div>
+      </div>
     </section>
   );
 }

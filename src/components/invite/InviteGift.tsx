@@ -1,6 +1,7 @@
 import { inviteData } from '../../data/inviteData';
 import { weddingData } from '../../data/weddingData';
 import { CoupleLineArt, GiftBoxArt } from './art';
+import { useState } from 'react';
 
 type Person = typeof weddingData.groom | typeof weddingData.bride;
 
@@ -8,15 +9,27 @@ type Person = typeof weddingData.groom | typeof weddingData.bride;
 const hasBank = (person: Person) => Boolean(person.bank.number && person.bank.bankName);
 
 function BankCard({ person, role }: { person: Person; role: string }) {
+  const [status, setStatus] = useState('');
+  const [qrFailed, setQrFailed] = useState(false);
+  const copyAccount = async () => {
+    try { await navigator.clipboard.writeText(person.bank.number); setStatus('Đã sao chép số tài khoản.'); }
+    catch { setStatus('Chưa sao chép được. Bạn có thể nhấn giữ số tài khoản để sao chép.'); }
+  };
   return (
     <div className="invite-gift__card">
       <p className="invite-gift__card-role">{role}</p>
-      {person.bank.qrCode && (
-        <img className="invite-gift__qr" src={person.bank.qrCode} alt={`Mã QR chuyển khoản ${role}`} loading="lazy" />
+      {person.bank.qrCode && !qrFailed && (
+        <img className="invite-gift__qr" src={person.bank.qrCode} alt={`Mã QR chuyển khoản ${role}`} loading="lazy" onError={() => setQrFailed(true)} />
       )}
       <p className="invite-gift__card-name">{person.bank.name}</p>
       <p className="invite-gift__card-number">{person.bank.number}</p>
       <p className="invite-gift__card-bank">{person.bank.bankName}</p>
+      <div className="invite-gift__actions">
+        <button type="button" className="invite-btn" onClick={() => void copyAccount()}>Sao chép số tài khoản</button>
+        {person.bank.qrCode && !qrFailed && <a className="invite-btn" href={person.bank.qrCode} download>Tải mã QR</a>}
+      </div>
+      {qrFailed && <p>Chưa tải được mã QR. Bạn có thể dùng số tài khoản bên trên.</p>}
+      <p role="status">{status}</p>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import RSVPPage from './RSVPPage';
 
 const { showToast, saveRsvpMock } = vi.hoisted(() => ({
   showToast: vi.fn(),
-  saveRsvpMock: vi.fn().mockResolvedValue('firestore'),
+  saveRsvpMock: vi.fn().mockResolvedValue({ mode: 'firestore' }),
 }));
 
 vi.mock('../hooks/weddingContext', () => ({
@@ -33,17 +33,20 @@ describe('RSVPPage', () => {
     const user = userEvent.setup();
     render(<MemoryRouter><RSVPPage /></MemoryRouter>);
 
-    await user.type(screen.getByLabelText('Tên của bạn *'), 'Nguyễn Văn An');
-    await user.type(screen.getByLabelText('Số điện thoại *'), '0901234567');
+    await user.click(screen.getByRole('radio', { name: 'Tham dự được' }));
+    await user.type(screen.getByLabelText('Họ tên *'), 'Nguyễn Văn An');
+    await user.type(screen.getByLabelText('Số điện thoại (không bắt buộc)'), '0901234567');
     await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByRole('button', { name: 'Xác nhận tham dự' }));
 
     expect(await screen.findByRole('heading', { name: 'Cảm ơn bạn!' })).toBeTruthy();
-    expect(saveRsvpMock).toHaveBeenCalledWith({
+    expect(saveRsvpMock).toHaveBeenCalledWith(expect.objectContaining({ input: {
       name: 'Nguyễn Văn An',
       phone: '0901234567',
       eventIds: [1],
       plusOnes: 0,
-    });
+      attending: true,
+      message: '',
+    } }), 'wedding-rsvp-v2:general');
   });
 });

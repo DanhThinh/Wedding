@@ -57,7 +57,7 @@ export function WeddingProvider({ children, guest }: { children: ReactNode; gues
     const audio = new Audio(BACKGROUND_MUSIC_SRC);
     audio.loop = true;
     audio.volume = 0.35;
-    audio.preload = 'auto';
+    audio.preload = 'none';
     audioRef.current = audio;
 
     // Sync state when audio ends unexpectedly
@@ -140,6 +140,7 @@ export function WeddingProvider({ children, guest }: { children: ReactNode; gues
   };
 
   const openModal = (modal: keyof ModalState) => {
+    if (modal === 'guestbook') window.dispatchEvent(new Event('wedding-guestbook-open'));
     setModals((prev) => ({ ...prev, [modal]: true }));
     document.body.style.overflow = 'hidden';
   };

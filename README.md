@@ -24,7 +24,8 @@ npm run preview
 |-------|-----------|
 | `/` | **Thiệp bản demo** — dựng lại theo `Demo/Demo.mp4`: bìa thiệp có con dấu sáp → Save The Date → Our Love Story → Và hôm nay → Wedding Ceremony → địa chỉ tổ chức và lịch trình từng tiệc → Photobooth → R.S.V.P → Hộp Quà Mừng → Album Ảnh Cưới |
 | `/classic` | Giao diện cũ (header + phong bì 3D + quick actions) |
-| `/rsvp` | Trang RSVP đầy đủ (tên, SĐT, chọn sự kiện) |
+| `/rsvp` | Cùng form RSVP với thiệp: có/không, tên, chọn tiệc, số người đi cùng, SĐT tùy chọn và lời nhắn |
+| `/manage` | Mở tệp danh sách khách riêng tư, lọc theo tiệc, tổng hợp số người và xuất CSV |
 
 Nội dung của giao diện thiệp nằm ở `src/data/inviteData.ts` (dùng lại tên,
 ngày cưới và ảnh từ `weddingData.ts`). Cập nhật nội dung tại:
@@ -50,6 +51,14 @@ trên thiệp luôn theo giờ Việt Nam (UTC+7), kể cả khi khách mở ở
 
 Ngày âm lịch ở phần *Wedding Ceremony* được tính tự động từ `weddingDate`
 (`src/lib/lunar.ts`), không cần nhập tay.
+
+Ngày chính lấy từ `weddingDay` ở đầu `weddingData.ts`; `weddingDateDisplay`,
+metadata chia sẻ và lịch trong thiệp được sinh từ cùng dữ liệu. Ngày từng tiệc
+vẫn có thể khác nhau, vì vậy khi đổi lịch cần kiểm tra cả `events[].date`.
+Story của hai giao diện cũng dùng chung `weddingData.story`.
+`VITE_SITE_URL` là URL công khai đầy đủ (bao gồm `/Wedding/` nếu có), dùng để
+sinh canonical, Open Graph, Twitter và URL ảnh tuyệt đối ngay lúc build.
+Không cần sửa ngày hay tên cặp đôi trong `index.html`.
 
 ## 💌 Thiệp mời riêng theo tên khách
 
@@ -148,6 +157,11 @@ src/
 
 Thay các ảnh trong thư mục `public/images/`:
 
+Ảnh chụp gốc đã được chuyển từ `public/images/Temp` sang `assets/originals`.
+Giữ ảnh nguồn ở đó; chỉ đưa ảnh đã tối ưu, được sử dụng trên thiệp vào `public`.
+Album/LightGallery được tải khi gần vùng nhìn thấy hoặc khi khách bấm xem album;
+giao diện classic và công cụ quản lý được chia thành các bundle riêng.
+
 | File | Mô tả |
 |------|-------|
 | `images/hero/slide-01.webp` đến `slide-05.webp` | Ảnh slideshow hero section |
@@ -178,7 +192,7 @@ export const weddingData = {
     initial: 'H',
     // ...
   },
-  weddingDate: new Date('2027-01-11T11:00:00+07:00'),
+  weddingDate: new Date('2027-03-03T11:00:00+07:00'),
   events: [...],
   story: [...],
   // ...
@@ -224,24 +238,91 @@ export const weddingData = {
 - Tablet: 640px - 1024px  
 - Desktop: > 1024px
 
-## 🔧 Mock API
+## Xác nhận tham dự và lưu nháp
 
 - **Guestbook**: Firestore realtime khi có cấu hình; localStorage dùng cho development fallback.
-- **RSVP**: Gửi vào Firestore khi có cấu hình; localStorage fallback không gửi dữ liệu đến chủ tiệc.
+- **RSVP**: cả hai form ghi vào `rsvps` với `schemaVersion: 2`. Chỉ thông báo
+  gửi thành công sau phản hồi của Firestore. Nếu mất mạng, cấu hình thiếu hoặc
+  bị từ chối, form giữ thông tin và hiện nút gửi lại. Chờ quá 8 giây cũng trả
+  quyền điều khiển cho khách; phản hồi đến muộn vẫn được nhận.
+- Bản nháp được lưu theo tên khách của link mời, dùng chung giữa `/` và `/rsvp`.
+  Khi mở lại form hoặc có mạng trở lại, chỉ bản đã bấm gửi mới được thử gửi lại.
+  Bản đang nhập chưa gửi không được tự động gửi.
+- Mỗi xác nhận có ID ngẫu nhiên cố định và mã chỉnh sửa ngẫu nhiên 256 bit.
+  Gửi lại/chỉnh sửa cập nhật cùng document, không thêm bản trùng. Mã chỉnh sửa
+  chỉ lưu trên thiết bị và trong document riêng tư, không đưa vào URL, Analytics
+  hay tệp xuất. Rules chặn đọc danh sách và chỉ cho cập nhật khi mã khớp.
+- Khách có thể mở lại form trên cùng trình duyệt để sửa xác nhận. Xóa dữ liệu
+  trình duyệt hoặc đổi thiết bị sẽ không khôi phục được quyền chỉnh sửa này.
+- Số người đi cùng áp dụng cho mỗi tiệc đã chọn. Khi chọn không tham dự,
+  danh sách tiệc và số người đi cùng được xóa. Form đóng sau ngày cưới theo giờ VN.
+- Nếu trình duyệt chặn lưu trữ, giữ nội dung trong form và báo lỗi trước khi gửi,
+  vì không thể bảo đảm gửi lại cùng ID qua lần tải trang tiếp theo.
+- Dữ liệu cũ trong `attendances`, `rsvps` và localStorage không bị xóa hay tự gửi
+  lại. Rules vẫn hỗ trợ tạo bản theo schema cũ cho các tab còn mở trước cập nhật.
+
+## Tổng hợp danh sách khách
+
+Yêu cầu Node.js 22.18+ và tài khoản quản trị có quyền đọc Firestore bằng
+Application Default Credentials, hoặc biến `GOOGLE_APPLICATION_CREDENTIALS`
+trỏ tới tệp service account lưu riêng trên máy. Không đặt credential quản trị
+trong `VITE_*`, `public` hay Git.
+
+```bash
+npm run rsvps:export -- --project ghostx-9a380
+```
+
+Lệnh chỉ đọc `rsvps` và `attendances`, xuất JSON + CSV vào `.private/` (đã ignore).
+Không in thông tin khách ra terminal, không xuất mã chỉnh sửa và không ghi đè tệp
+đã có. Mở route `/manage`, chọn JSON vừa xuất để lọc, xem số khách theo tiệc và
+tải CSV. Trang này không kết nối cơ sở dữ liệu, không tải tệp lên server và không
+lưu danh sách vào trình duyệt. Truy cập URL `/manage` không làm lộ danh sách khách.
+
+Form cũ không chọn tiệc sẽ được đánh dấu “Chưa chọn tiệc”. Không tự gộp người
+trùng tên vì có thể là hai khách khác nhau; cần đối chiếu trước khi chốt số lượng.
+
+Có thể thử công cụ bằng dữ liệu mẫu:
+
+```bash
+npm run rsvps:export -- --from tests/fixtures/rsvps.json
+```
 
 ## Firebase và kiểm thử
 
 Sao chép `.env.example` thành `.env`, điền cấu hình Firebase rồi deploy `firestore.rules`.
 Với bản GitHub Pages, tạo các Actions Variables cùng tên `VITE_FIREBASE_*`
 (tối thiểu `VITE_FIREBASE_API_KEY` và `VITE_FIREBASE_PROJECT_ID`). Khuyến nghị
-cấu hình thêm `VITE_FIREBASE_APPCHECK_SITE_KEY` và bật App Check enforcement cho
-Cloud Firestore để hạn chế ghi dữ liệu tự động.
+cấu hình provider reCAPTCHA v3 trong Firebase App Check, thêm site key tương ứng
+vào `VITE_FIREBASE_APPCHECK_SITE_KEY` tại môi trường local và GitHub Actions.
+Site secret chỉ nhập vào Firebase Console; không đưa secret vào biến `VITE_*`.
+Đăng ký đúng domain triển khai, kiểm tra request hợp lệ trong App Check metrics,
+rồi bật enforcement cho Cloud Firestore. Bật enforcement khi ứng dụng chưa có
+provider/token sẽ làm mọi lời chúc và RSVP trực tuyến bị từ chối.
+
+Triển khai `firestore.rules` mới **trước** khi phát hành client dùng schema v2:
+
+```bash
+npm run firebase:rules
+```
+
+Firestore rules tests cần Java 21+. Các bài kiểm tra dùng project
+`demo-wedding-tests` trong emulator, không ghi dữ liệu lên Firebase thật.
+Browser tests tự build một bản riêng dưới `/Wedding/`, xóa cấu hình Firebase
+production khỏi môi trường chạy và kiểm tra cả Chromium lẫn WebKit mobile.
 
 ```bash
 npm run test
 npm run lint
 npm run build
+npm run test:rules
+npx playwright install chromium webkit
+npm run test:e2e
 ```
+
+Workflow `verify.yml` chạy lint, unit tests, rules tests và browser tests cho PR;
+workflow deploy gọi lại cùng bộ kiểm tra trước khi build production và xuất bản.
+Các ảnh/số liệu kiểm thử không thay thế kiểm tra trên điện thoại thật hay xác
+minh App Check enforcement trong project production.
 
 ---
 

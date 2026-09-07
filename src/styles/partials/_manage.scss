@@ -1,0 +1,18 @@
+.manage-page {
+  max-width: 1200px; margin: auto; padding: 2rem 1rem 4rem; color: #332d27;
+  h1 { font-size: 2rem; margin: 1rem 0; }
+  p { margin: .6rem 0; }
+  button, input, select { border: 1px solid #c9bba9; border-radius: .4rem; padding: .65rem; min-height: 44px; background: white; color: #332d27; }
+  button { cursor: pointer; background: #f4e9d5; }
+  label { display: flex; flex-direction: column; gap: .5rem; }
+  [role='alert'] { color: #a22d2d; }
+}
+.manage-upload { margin: 1.5rem 0; }
+.manage-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .8rem; margin: 1.5rem 0; }
+.manage-stats p { background: #faf2e5; padding: 1rem; border-radius: .5rem; }
+.manage-stats strong { display: block; font-size: 1.8rem; }
+.manage-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; margin: 1.5rem 0; }
+.manage-table { overflow-x: auto; }
+.manage-table table { border-collapse: collapse; width: 100%; min-width: 680px; }
+.manage-table th, .manage-table td { text-align: left; padding: .75rem; border-bottom: 1px solid #e2d9cb; overflow-wrap: anywhere; max-width: 300px; }
+[data-theme='dark'] .manage-page { background: #fffdf8; }

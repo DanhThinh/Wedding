@@ -21,7 +21,8 @@ function buildMonthGrid(date: Date) {
 
 /**
  * "Wedding Ceremony": giờ – ngày – thứ, ngày âm lịch, dòng chữ
- * "WELCOME TO OUR WEDDING", ảnh cưới cắt hình vòm và lịch tháng cưới chồng lên đáy ảnh.
+ * "WELCOME TO OUR WEDDING" bo cong theo dáng vòm, ảnh cưới cắt hình vòm
+ * và lịch tháng cưới chồng lên đáy ảnh.
  */
 export default function InviteCeremony() {
   const { ceremony, weddingDate } = inviteData;
@@ -35,9 +36,22 @@ export default function InviteCeremony() {
       <p className="invite-ceremony__lunar" data-reveal="up">({formatLunarLine(weddingDate)})</p>
 
       <div className="invite-ceremony__stage" data-reveal="scale">
-        {/* Chữ vòng cung theo dáng ảnh vòm khó khớp cong chuẩn với mọi ảnh —
-            để chữ thẳng cho gọn và luôn ngay ngắn. */}
-        <p className="invite-ceremony__welcome">{ceremony.welcome}</p>
+        {/* Chữ bo cong theo đúng dáng vòm của ảnh bên dưới — cung tròn vẽ
+            bằng SVG textPath, dùng viewBox tỉ lệ nên co giãn cùng ảnh vòm
+            thay vì phụ thuộc kích thước px cố định. */}
+        <svg
+          className="invite-ceremony__welcome"
+          viewBox="0 0 320 90"
+          role="img"
+          aria-label={ceremony.welcome}
+        >
+          <path id="invite-ceremony-arc" d="M 4 82 Q 160 -50 316 82" fill="none" />
+          <text className="invite-ceremony__welcome-text">
+            <textPath href="#invite-ceremony-arc" startOffset="50%" textAnchor="middle">
+              {ceremony.welcome}
+            </textPath>
+          </text>
+        </svg>
 
         <figure className="invite-ceremony__arch">
           <img

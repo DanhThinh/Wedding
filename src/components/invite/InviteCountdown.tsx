@@ -1,8 +1,53 @@
+import { useState } from 'react';
 import { useWedding } from '../../hooks/weddingContext';
 import { useCountdown } from '../../hooks/useCountdown';
 import { getWeddingPhase } from '../../lib/weddingState';
 
 const UNIT_LABELS = ['Ngày', 'Giờ', 'Phút', 'Giây'];
+
+/**
+ * Một chữ số trong khe cắt tràn: số cũ lăn lên khuất phía trên, số mới lăn lên
+ * thế chỗ từ phía dưới. Phải giữ cả hai cùng lúc — nếu chỉ vẽ số mới thì trong
+ * suốt thời gian nó còn nằm dưới mặt nạ, khe sẽ trống trơn và mắt đọc thành
+ * "số bị nháy mất" chứ không phải một vòng lăn.
+ */
+function RollingDigit({ digit }: { digit: string }) {
+  // Cập nhật state ngay trong lúc render là cách React khuyến nghị để lấy giá
+  // trị trước đó của prop; nhánh `if` đảm bảo không lặp vô hạn.
+  const [state, setState] = useState({ current: digit, previous: null as string | null });
+
+  if (digit !== state.current) {
+    setState({ current: digit, previous: state.current });
+  }
+
+  return (
+    <span className="invite-countdown__digit-slot">
+      {state.previous !== null && (
+        <span
+          className="invite-countdown__digit is-leaving"
+          key={`out-${state.previous}-${state.current}`}
+          aria-hidden="true"
+        >
+          {state.previous}
+        </span>
+      )}
+      <span className="invite-countdown__digit" key={`in-${state.current}`}>
+        {state.current}
+      </span>
+    </span>
+  );
+}
+
+/** Số đếm ngược tách thành từng chữ số — chỉ chữ số thực sự đổi mới lăn. */
+function RollingValue({ value }: { value: number }) {
+  return (
+    <span className="invite-countdown__value">
+      {String(value).padStart(2, '0').split('').map((digit, index) => (
+        <RollingDigit digit={digit} key={index} />
+      ))}
+    </span>
+  );
+}
 
 /** Đếm ngược đến giờ cưới — tự ẩn sau khi ngày cưới đã qua. */
 export default function InviteCountdown() {
@@ -33,7 +78,7 @@ export default function InviteCountdown() {
           {values.map((value, index) => (
             <span className="invite-countdown__group" key={UNIT_LABELS[index]}>
               <span className="invite-countdown__unit">
-                <span className="invite-countdown__value">{String(value).padStart(2, '0')}</span>
+                <RollingValue value={value} />
                 <span className="invite-countdown__label">{UNIT_LABELS[index]}</span>
               </span>
               {index < values.length - 1 && (

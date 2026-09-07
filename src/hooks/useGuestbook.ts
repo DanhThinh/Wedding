@@ -50,11 +50,27 @@ function parseSavedWishes(raw: string | null) {
  * 2. localStorage fallback (nếu chưa config) — vẫn hoạt động, sync giữa các tab
  */
 export function useGuestbook() {
+  const [enabled, setEnabled] = useState(!isFirebaseConfigured);
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [isRealtime, setIsRealtime] = useState(false);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<GuestbookMode>('loading');
   const modeRef = useRef<GuestbookMode>('loading');
+
+  useEffect(() => {
+    if (enabled) return;
+    const enable = () => setEnabled(true);
+    window.addEventListener('wedding-guestbook-open', enable);
+    if (!('IntersectionObserver' in window)) { enable(); return () => window.removeEventListener('wedding-guestbook-open', enable); }
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) { enable(); observer.disconnect(); }
+    }, { rootMargin: '500px' });
+    const observe = () => { const section = document.getElementById('guestbook'); if (section) observer.observe(section); };
+    observe();
+    const mutations = new MutationObserver(observe);
+    mutations.observe(document.getElementById('root') ?? document.body, { childList: true, subtree: true });
+    return () => { observer.disconnect(); mutations.disconnect(); window.removeEventListener('wedding-guestbook-open', enable); };
+  }, [enabled]);
 
   const setGuestbookMode = useCallback((nextMode: GuestbookMode) => {
     modeRef.current = nextMode;
@@ -88,6 +104,7 @@ export function useGuestbook() {
 
   // ─── Chế độ 1: Firestore realtime ───
   useEffect(() => {
+    if (!enabled) return;
     let active = true;
     let unsubscribe: (() => void) | undefined;
 
@@ -130,12 +147,12 @@ export function useGuestbook() {
       loadFromLocalStorage();
     };
 
-    void start();
+    void start().catch(() => { if (active) { setGuestbookMode('local'); loadFromLocalStorage(); } });
     return () => {
       active = false;
       unsubscribe?.();
     };
-  }, [loadFromLocalStorage, setGuestbookMode]);
+  }, [enabled, loadFromLocalStorage, setGuestbookMode]);
 
   // Sync localStorage giữa các tab (chỉ khi không dùng realtime)
   useEffect(() => {

@@ -3,10 +3,12 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import InviteRsvpSheet from './InviteRsvpSheet';
+import { weddingData } from '../../data/weddingData';
+import { rsvpStorageKey, readRsvpDraft } from '../../lib/rsvp';
 
 const { showToast } = vi.hoisted(() => ({ showToast: vi.fn() }));
 vi.mock('../../hooks/weddingContext', () => ({
-  useWedding: () => ({ showToast, guest: null }),
+  useWedding: () => ({ showToast, guest: null, data: weddingData }),
 }));
 vi.mock('../../lib/analytics', () => ({ trackEvent: vi.fn() }));
 
@@ -28,24 +30,26 @@ describe('InviteRsvpSheet', () => {
     showToast.mockClear();
     render(<InviteRsvpSheet open onClose={onClose} />);
     await user.click(screen.getByRole('radio', { name: 'Tham dự được' }));
-    await user.type(screen.getByLabelText('Họ tên'), 'Nguyễn Văn An');
+    await user.click(screen.getAllByRole('checkbox')[0]);
+    await user.type(screen.getByLabelText('Họ tên *'), 'Nguyễn Văn An');
     await user.type(screen.getByLabelText('Lời nhắn'), 'Hẹn gặp nhé!');
 
     const storage = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new DOMException('Storage full', 'QuotaExceededError');
     });
-    await user.click(screen.getByRole('button', { name: 'Gửi thông tin' }));
+    await user.click(screen.getByRole('button', { name: 'Xác nhận tham dự' }));
     expect(await screen.findByRole('alert')).toBeTruthy();
     expect(onClose).not.toHaveBeenCalled();
     expect(showToast).not.toHaveBeenCalled();
-    expect((screen.getByLabelText('Họ tên') as HTMLInputElement).value).toBe('Nguyễn Văn An');
+    expect((screen.getByLabelText('Họ tên *') as HTMLInputElement).value).toBe('Nguyễn Văn An');
     expect((screen.getByLabelText('Lời nhắn') as HTMLTextAreaElement).value).toBe('Hẹn gặp nhé!');
-    expect(screen.getByRole('radio', { name: 'Tham dự được' }).getAttribute('aria-checked')).toBe('true');
+    expect((screen.getByRole('radio', { name: 'Tham dự được' }) as HTMLInputElement).checked).toBe(true);
 
     storage.mockRestore();
-    await user.click(screen.getByRole('button', { name: 'Gửi thông tin' }));
-    expect(onClose).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(localStorage.getItem('wedding-attendances')!)).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Xác nhận tham dự' }));
+    expect(onClose).not.toHaveBeenCalled();
+    expect(await screen.findByText('Chưa xác nhận được chủ tiệc đã nhận thông tin.')).toBeTruthy();
+    expect(readRsvpDraft(rsvpStorageKey())?.status).toBe('pending');
   });
 
   it('wraps keyboard focus, disables the background and restores it on Escape', async () => {
@@ -58,11 +62,11 @@ describe('InviteRsvpSheet', () => {
     expect(document.activeElement).toBe(screen.getByRole('dialog'));
 
     await user.tab({ shift: true });
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Gửi thông tin' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Xác nhận tham dự' }));
     await user.tab();
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Đóng' }));
     await user.tab({ shift: true });
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Gửi thông tin' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Xác nhận tham dự' }));
 
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -75,7 +79,7 @@ describe('InviteRsvpSheet', () => {
   it('does not steal input focus when the parent updates its close callback', async () => {
     const user = userEvent.setup();
     const { rerender } = render(<InviteRsvpSheet open onClose={() => {}} />);
-    const input = screen.getByLabelText('Họ tên');
+    const input = screen.getByLabelText('Họ tên *');
     await user.type(input, 'An');
     const onClose = vi.fn();
     rerender(<InviteRsvpSheet open onClose={onClose} />);

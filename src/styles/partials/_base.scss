@@ -107,10 +107,11 @@ b, strong { font-weight: 600; }
   font-size: var(--fs-sm);
   z-index: 99999;
   transform: translateY(-120%);
+  clip-path: inset(100%);
   transition: transform 0.2s;
   text-decoration: none;
 }
-.skip-link:focus { transform: translateY(0); }
+.skip-link:focus { transform: translateY(0); clip-path: none; }
 
 :focus-visible {
   outline: 2px solid var(--primary);

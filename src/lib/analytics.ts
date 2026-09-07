@@ -1,4 +1,4 @@
-import { getFirebaseClient } from './firebase';
+import { getFirebaseAnalytics } from './firebase';
 import { getAnalyticsPageParams } from './analyticsPrivacy';
 
 type AnalyticsValue = string | number | boolean | null | undefined;
@@ -41,11 +41,12 @@ export function sanitizeAnalyticsParams(params: AnalyticsParams = {}) {
 }
 
 export async function trackEvent(eventName: AnalyticsEventName, params: AnalyticsParams = {}) {
+  if (!import.meta.env.VITE_FIREBASE_MEASUREMENT_ID) return;
   try {
-    const client = await getFirebaseClient();
-    if (!client?.analytics) return;
+    const analytics = await getFirebaseAnalytics();
+    if (!analytics) return;
     const { logEvent } = await import('firebase/analytics');
-    logEvent(client.analytics, eventName, {
+    logEvent(analytics, eventName, {
       ...sanitizeAnalyticsParams(params),
       ...getAnalyticsPageParams(),
     });

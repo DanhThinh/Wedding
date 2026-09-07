@@ -1,4 +1,5 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { lazy, useEffect, useState } from 'react';
+import DeferredSection from '../components/DeferredSection';
 import InviteCover from '../components/invite/InviteCover';
 import InviteHero from '../components/invite/InviteHero';
 import InviteGreeting from '../components/invite/InviteGreeting';
@@ -50,9 +51,9 @@ export default function InvitePage() {
   return (
     <div className="invite">
       {!opened && <InviteCover onOpen={handleOpen} />}
-      {showPetals && <FallingPetals burst count={12} />}
+      {showPetals && <FallingPetals burst count={12} shape="mix" />}
 
-      <main className="invite__scroll">
+      <main id="main-content" tabIndex={-1} className="invite__scroll">
         <InviteHero />
         <InviteGreeting />
         <InviteCountdown />
@@ -64,9 +65,9 @@ export default function InvitePage() {
         <InviteRsvp onOpen={() => setRsvpOpen(true)} />
         <InviteGuestbook />
         <InviteGift />
-        <Suspense fallback={<section id="album" className="invite-album is-loading" aria-busy="true" />}>
+        <DeferredSection id="album">
           <InviteAlbum />
-        </Suspense>
+        </DeferredSection>
       </main>
 
       {opened && <InviteDock onOpenRsvp={() => setRsvpOpen(true)} />}

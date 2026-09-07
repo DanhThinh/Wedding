@@ -1,5 +1,11 @@
 // Wedding Data - Easy to customize
-const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`;
+// Also imported by the build to generate social previews from the same content.
+const publicAsset = (path: string) => `${import.meta.env?.BASE_URL ?? '/'}${path.replace(/^\//, '')}`;
+const weddingDay = '2027-03-03';
+const weddingDate = new Date(`${weddingDay}T11:00:00+07:00`);
+const weddingDateDisplay = new Intl.DateTimeFormat('vi-VN', {
+  day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh',
+}).format(weddingDate).replace(/(\d+)\/(\d+)\/(\d+)/, '$1 tháng $2 năm $3');
 
 // Vị trí chung của tiệc nhà trai và tiệc cưới, theo ghim Google Maps đã cung cấp.
 // Dùng tọa độ của địa điểm (!3d/!4d), không dùng tọa độ tâm bản đồ sau dấu @.
@@ -10,6 +16,7 @@ const groomVenue = {
 };
 
 export const weddingData = {
+  siteUrl: 'https://danhthinh.github.io/Wedding/',
   // Couple Information
   groom: {
     fullName: 'Nguyễn Danh Thịnh',
@@ -45,8 +52,8 @@ export const weddingData = {
   monogram: 'T & H',
 
   // Wedding Date
-  weddingDate: new Date('2027-03-03T11:00:00+07:00'),
-  weddingDateDisplay: '03 tháng 03 năm 2027',
+  weddingDate,
+  weddingDateDisplay,
 
   // Family Info
   groomFamily: {
@@ -85,7 +92,7 @@ export const weddingData = {
     },
     {
       id: 3,
-      date: '03/03/2027',
+      date: new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh' }).format(weddingDate),
       title: 'Ngày chung đôi',
       content: 'Gần 10 năm bên nhau, chúng ta đã cùng nhau vượt qua bao thử thách, chia sẻ những niềm vui, nỗi buồn, và những khoảnh khắc không thể quên. Tình yêu của chúng ta đã trưởng thành, vững vàng như một cây cổ thụ, ngày càng mạnh mẽ và bền chặt hơn qua từng ngày.',
       image: publicAsset('/images/story/moment-03.webp'),
@@ -98,7 +105,7 @@ export const weddingData = {
     {
       id: 1,
       name: 'Tiệc nhà trai',
-      date: '2027-03-03',
+      date: weddingDay,
       time: '11:00',
       timeDisplay: '11:00',
       ...groomVenue,
@@ -125,7 +132,7 @@ export const weddingData = {
     {
       id: 3,
       name: 'Tiệc cưới',
-      date: '2027-03-03',
+      date: weddingDay,
       time: '18:00',
       timeDisplay: '18:00',
       ...groomVenue,

@@ -10,6 +10,11 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.e2e-dist/
+test-results/
+playwright-report/
+.firebase/
+*-debug.log
 *.local
 
 # Environment variables (Firebase keys, secrets)
@@ -20,6 +25,7 @@ dist-ssr
 # Danh sách khách mời thật + link đã sinh (xem guests.example.csv)
 guests.csv
 guests-links.csv
+.private/
 
 # Editor directories and files
 .vscode/*

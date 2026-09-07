@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "rows": [
+    { "id": "example", "source": "rsvps", "name": "Khách ví dụ", "phone": "", "attending": true, "eventIds": [1, 3], "plusOnes": 1, "message": "Hẹn gặp cả nhà", "updatedAt": "2026-09-07T10:00:00Z" }
+  ]
+}

@@ -43,40 +43,14 @@ export const inviteData = {
      * Mỗi mốc là một dấu tim trên trục dọc, ảnh và chữ nằm so le hai bên.
      * `side: 'left'` nghĩa là chữ bên trái, ảnh bên phải (giống mốc đầu của demo).
      */
-    milestones: [
-      {
-        id: 1,
-        year: '2020',
-        title: 'How We Met',
-        text: weddingData.story[0].content,
-        image: weddingData.story[0].image,
-        side: 'left' as const,
-      },
-      {
-        id: 2,
-        year: '2022',
-        title: 'First Adventure',
-        text: weddingData.story[1].content,
-        image: weddingData.story[1].image,
-        side: 'right' as const,
-      },
-      {
-        id: 3,
-        year: '2024',
-        title: 'Moving Forward',
-        text: 'Chúng mình hiểu rằng đây là định mệnh đã đưa nhau về đây. Cùng nhau vun đắp cuộc sống, chắp cánh cho những ước mơ và ngày một gắn bó, mạnh mẽ hơn qua từng ngày.',
-        image: weddingData.story[2].image,
-        side: 'left' as const,
-      },
-      {
-        id: 4,
-        year: '2026',
-        title: 'The Proposal',
-        text: 'Trái tim đầy ắp yêu thương và những giấc mơ về ngày mai, anh đã ngỏ lời... và em gật đầu trong niềm xúc động vỡ oà.',
-        image: weddingData.heroSlides[1],
-        side: 'right' as const,
-      },
-    ],
+    milestones: weddingData.story.map((moment, index) => ({
+      id: moment.id,
+      year: moment.date.split('/')[2],
+      title: moment.title,
+      text: moment.content,
+      image: moment.image,
+      side: index % 2 === 0 ? 'left' as const : 'right' as const,
+    })),
   },
 
   /* ── Và hôm nay ─────────────────────────────────────────────── */
