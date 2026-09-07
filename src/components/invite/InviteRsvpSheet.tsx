@@ -1,58 +1,14 @@
-import { useEffect, useId, useRef } from 'react';
+import { useId } from 'react';
 import { inviteData } from '../../data/inviteData';
+import { useDialogA11y } from '../../hooks/useDialogA11y';
 import RsvpForm from '../RsvpForm';
 
 interface InviteRsvpSheetProps { open: boolean; onClose: () => void; }
 
 export default function InviteRsvpSheet({ open, onClose }: InviteRsvpSheetProps) {
   const { rsvp } = inviteData;
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const onCloseRef = useRef(onClose);
+  const sheetRef = useDialogA11y(open, onClose);
   const titleId = useId();
-
-  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
-  useEffect(() => {
-    if (!open) return;
-    const panel = sheetRef.current;
-    if (!panel) return;
-    const previousOverflow = document.body.style.overflow;
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    document.body.style.overflow = 'hidden';
-    panel.focus();
-    const background = new Map<Element, string | null>();
-    let branch = panel.parentElement;
-    while (branch && branch !== document.body) {
-      for (const sibling of branch.parentElement?.children ?? []) {
-        if (sibling === branch) continue;
-        background.set(sibling, sibling.getAttribute('inert'));
-        sibling.setAttribute('inert', '');
-      }
-      branch = branch.parentElement;
-    }
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { event.preventDefault(); onCloseRef.current(); return; }
-      if (event.key !== 'Tab') return;
-      const focusable = Array.from(panel.querySelectorAll<HTMLElement>(
-        'a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])',
-      )).filter(element => !element.matches(':disabled') && !element.closest('[inert]'));
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement;
-      if (!first || !last) { event.preventDefault(); panel.focus(); }
-      else if (!panel.contains(active) || active === panel) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
-      else if (event.shiftKey && active === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && active === last) { event.preventDefault(); first.focus(); }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      background.forEach((inert, element) => {
-        if (inert === null) element.removeAttribute('inert'); else element.setAttribute('inert', inert);
-      });
-      document.body.style.overflow = previousOverflow;
-      if (previouslyFocused?.isConnected) previouslyFocused.focus();
-    };
-  }, [open]);
 
   if (!open) return null;
   return (

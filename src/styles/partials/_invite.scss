@@ -1111,7 +1111,28 @@
 }
 
 .invite-gift__couple { width: min(34%, 130px); height: auto; }
-.invite-gift__box    { width: min(44%, 165px); height: auto; }
+.invite-gift__box    { width: min(44%, 165px); height: auto; transition: transform 0.2s var(--ease-out-quint, ease); }
+
+.invite-gift__box-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover .invite-gift__box,
+  &:focus-visible .invite-gift__box { transform: translateY(-2px) scale(1.03); }
+}
+
+.invite-gift__box-hint {
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+  color: var(--ink-mute);
+}
 
 .invite-gift__desc {
   margin-top: clamp(0.6rem, 3vw, 1rem);
